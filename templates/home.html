@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Головна{% endblock %}
+
+{% block content %}
+
+<h1>Ласкаво просимо до соцмережі!</h1>
+
+{% if user.is_authenticated %}
+    <p>Ви увійшли як <strong>{{ user.username }}</strong></p>
+    <p>Роль: <strong>{{ user.role }}</strong></p>
+{% else %}
+    <p>Увійдіть або зареєструйтесь, щоб користуватися сайтом.</p>
+{% endif %}
+
+{% endblock %}
