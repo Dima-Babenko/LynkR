@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Стрічка постів{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <h2>Стрічка постів</h2>
+
+    <div class="card mt-3 text-start">
+        <div class="card-header">
+            Створити новий пост
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Опублікувати</button>
+            </form>
+        </div>
+    </div>
+
+    <hr>
+
+    {% for post in posts %}
+    <div class="card my-3">
+        <div class="card-body">
+            <h5 class="card-title">
+                {{ post.author.username }}
+                <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
+            </h5>
+            <p class="card-text">{{ post.content }}</p>
+            {% if post.image %}
+                <img src="{{ post.image.url }}" class="img-fluid" alt="Зображення поста">
+            {% endif %}
+
+            <!-- Лайк -->
+            <form action="{% url 'posts:like_post' post.id %}" method="post" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    Лайк ({{ post.likes.count }})
+                </button>
+            </form>
+
+            <!-- Редагування і видалення: для автора, модератора і адміна -->
+            {% if user == post.author or user.is_moderator or user.is_admin %}
+                <a href="{% url 'posts:edit_post' post.id %}" class="btn btn-outline-secondary btn-sm ms-2">
+                    Редагувати
+                </a>
+
+                <form action="{% url 'posts:delete_post' post.id %}" method="post" class="d-inline ms-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Видалити</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+        <p>Пости відсутні.</p>
+    {% endfor %}
+
+</div>
+{% endblock %}

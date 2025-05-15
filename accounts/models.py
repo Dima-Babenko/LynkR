@@ -8,6 +8,7 @@ class CustomUser(AbstractUser):
         ('admin', 'Admin'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
 
     def is_moderator(self):
         return self.role in ['moderator', 'admin']

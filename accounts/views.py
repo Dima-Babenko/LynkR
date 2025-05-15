@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib import messages
-from .forms import CustomUserCreationForm, CustomAuthenticationForm
+from django.contrib.auth.decorators import login_required
+from .forms import CustomUserCreationForm, CustomAuthenticationForm, EditProfileForm
 
 # Головна сторінка
 def home(request):
@@ -35,6 +36,18 @@ def login_view(request):
     else:
         form = CustomAuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
+
+
+@login_required
+def edit_profile_view(request):
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = EditProfileForm(instance=request.user)
+    return render(request, 'accounts/edit_profile.html', {'form': form})
 
 # Вихід
 def logout_view(request):

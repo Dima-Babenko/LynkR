@@ -3,14 +3,18 @@
 {% block title %}Головна{% endblock %}
 
 {% block content %}
+<div class="text-center">
+    <h1 class="mb-4">Ласкаво просимо до соцмережі!</h1>
 
-<h1>Ласкаво просимо до соцмережі!</h1>
-
-{% if user.is_authenticated %}
-    <p>Ви увійшли як <strong>{{ user.username }}</strong></p>
-    <p>Роль: <strong>{{ user.role }}</strong></p>
-{% else %}
-    <p>Увійдіть або зареєструйтесь, щоб користуватися сайтом.</p>
-{% endif %}
-
+    {% if user.is_authenticated %}
+        <div class="alert alert-success" role="alert">
+            Ви увійшли як <strong>{{ user.username }}</strong><br>
+            Роль: <strong>{{ user.role }}</strong>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <p>Увійдіть або зареєструйтесь, щоб користуватися сайтом.</p>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

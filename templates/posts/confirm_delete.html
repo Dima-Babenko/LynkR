@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Підтвердження видалення{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Видалити пост</h2>
+    <p>Ви впевнені, що хочете видалити цей пост?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Так, видалити</button>
+        <a href="{% url 'posts:feed' %}" class="btn btn-secondary">Скасувати</a>
+    </form>
+</div>
+
+{% endblock %}

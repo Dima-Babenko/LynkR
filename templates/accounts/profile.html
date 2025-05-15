@@ -1,9 +1,17 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block content %}
 
   <h1>Привіт, {{ user.username }}!</h1>
   <p>Email: {{ user.email }}</p>
-  <p>Роль: {{ user.role }}</p>
+  <p>Роль: {{ user.get_role_display }}</p>
+
+  {% if user.avatar %}
+    <img src="{{ user.avatar.url }}" alt="avatar" width="150" height="150">
+  {% endif %}
+
+  <p><a href="{% url 'edit_profile' %}">Редагувати профіль</a></p>
 
 {% endblock %}

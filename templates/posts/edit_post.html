@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Редагування поста{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Редагувати пост</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Зберегти</button>
+        <a href="{% url 'posts:feed' %}" class="btn btn-secondary">Скасувати</a>
+    </form>
+</div>
+
+{% endblock %}

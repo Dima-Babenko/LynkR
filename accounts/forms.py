@@ -10,6 +10,12 @@ class CustomUserCreationForm(UserCreationForm):
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2']
 
+
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ['username', 'email', 'avatar']
+
 # Форма для входу
 class CustomAuthenticationForm(AuthenticationForm):
     pass
