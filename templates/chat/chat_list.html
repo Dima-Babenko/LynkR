@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Ваші чати</h2>
+<ul>
+  {% for chat in chats %}
+    <li>
+      <a href="{% url 'chat:chat_detail' chat.id %}">
+        {% if chat.is_group %}
+          {{ chat.name }}
+        {% else %}
+          Приватний чат з 
+          {% for user in chat.participants.all %}
+            {% if user != request.user %}
+              {{ user.username }}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </a>
+    </li>
+  {% empty %}
+    <li>У вас ще немає чатів</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

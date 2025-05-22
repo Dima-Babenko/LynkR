@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<h2>Чат</h2>
+
+<div>
+  {% for message in messages %}
+    <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
+    {% if message.file %}
+      <p><a href="{{ message.file.url }}">📎 Файл</a></p>
+    {% endif %}
+  {% endfor %}
+</div>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <textarea name="text" rows="2" placeholder="Введіть повідомлення..."></textarea>
+  <input type="file" name="file">
+  <button type="submit">Надіслати</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Друзі</h2>
+<ul>
+    {% for friend in friends %}
+        <li>{{ friend.username }} ({{ friend.friend_id }})</li>
+    {% empty %}
+        <li>У вас ще немає друзів.</li>
+    {% endfor %}
+</ul>
+<hr>
+<h3>Знайти користувача</h3>
+<form method="post" action="{% url 'send_friend_request' %}">
+    {% csrf_token %}
+    <input type="text" name="friend_id" placeholder="Введіть friend ID">
+    <button type="submit">Додати</button>
+</form>
+<a href="{% url 'change_friend_id' %}">Змінити свій ID</a>
+<hr>
+<h3>Запити в друзі</h3>
+<ul>
+    {% for req in requests %}
+        <li>{{ req.from_user.username }}
+            <a href="{% url 'respond_friend_request' req.id 'accept' %}">Прийняти</a>
+            <a href="{% url 'respond_friend_request' req.id 'reject' %}">Відхилити</a>
+        </li>
+    {% empty %}
+        <li>Немає нових запитів.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
