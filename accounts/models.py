@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
+import random
 
 
 class CustomUser(AbstractUser):
@@ -11,7 +12,7 @@ class CustomUser(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
-    friend_id = models.CharField(max_length=32, unique=True, blank=True, null=True)
+    friend_id = models.CharField(max_length=7, unique=True, blank=True, null=True)
 
     def is_moderator(self):
         return self.role in ['moderator', 'admin']
@@ -21,8 +22,14 @@ class CustomUser(AbstractUser):
 
     def save(self, *args, **kwargs):
         if not self.friend_id:
-            self.friend_id = self.username
+            self.friend_id = self.generate_unique_friend_id()
         super().save(*args, **kwargs)
+
+    def generate_unique_friend_id(self):
+        while True:
+            new_id = ''.join([str(random.randint(0, 9)) for _ in range(7)])
+            if not CustomUser.objects.filter(friend_id=new_id).exists():
+                return new_id
 
 
 class FriendRequest(models.Model):
