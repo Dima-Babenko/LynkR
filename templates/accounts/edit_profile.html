@@ -4,11 +4,16 @@
 
 {% block content %}
 
-  <h2>Редагування профілю</h2>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Зберегти</button>
-  </form>
+<h2>Редагування профілю</h2>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  <p>{{ form.username.label_tag }} {{ form.username }}</p>
+  <p>{{ form.email.label_tag }} {{ form.email }}</p>
+  <p>{{ form.avatar.label_tag }} {{ form.avatar }}</p>
+  <p>{{ form.friend_id.label_tag }} {{ form.friend_id }}</p>
+  <button type="submit">Зберегти</button>
+</form>
+
 
 {% endblock %}
