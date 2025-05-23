@@ -4,6 +4,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, EditProfileForm
 from .models import CustomUser, FriendRequest, Friendship
+from chat.models import Chat
+from django.db.models import Q
+from django.http import HttpResponseForbidden
 
 # Головна сторінка
 def home(request):
@@ -100,14 +103,36 @@ def send_friend_request(request):
             messages.error(request, 'Користувача не знайдено.')
     return redirect('friends')
 
+
 @login_required
 def respond_to_request(request, request_id, action):
     friend_request = get_object_or_404(FriendRequest, id=request_id, to_user=request.user)
+
     if action == 'accept':
+        # Створюємо запис дружби
         Friendship.objects.create(user1=friend_request.from_user, user2=friend_request.to_user)
+
+        # Створюємо чат, якщо ще не існує
+        from_user = friend_request.from_user
+        to_user = friend_request.to_user
+
+        existing_chats = Chat.objects.filter(
+            is_group=False,
+            participants=from_user
+        ).filter(
+            participants=to_user
+        )
+
+        if not existing_chats.exists():
+            chat = Chat.objects.create(is_group=False)
+            chat.participants.add(from_user, to_user)
+
+        # Видаляємо запит
         friend_request.delete()
+
     elif action == 'reject':
         friend_request.delete()
+
     return redirect('friends')
 
 
@@ -122,3 +147,36 @@ def change_friend_id(request):
     else:
         form = EditProfileForm(instance=request.user)
     return render(request, 'accounts/change_friend_id.html', {'form': form})
+
+
+@login_required
+def remove_friend(request, chat_id):
+    chat = get_object_or_404(Chat, id=chat_id)
+
+    if chat.is_group:
+        return HttpResponseForbidden("Це не приватний чат.")
+
+    if request.user not in chat.participants.all():
+        return HttpResponseForbidden("Ви не учасник цього чату.")
+
+    if request.method == 'POST':
+        # Знайдемо іншого учасника чату — це і є друг
+        friend = chat.participants.exclude(id=request.user.id).first()
+
+        if friend:
+            # Видалити дружбу між request.user і friend
+            friendship = Friendship.objects.filter(
+                (Q(user1=request.user) & Q(user2=friend)) |
+                (Q(user1=friend) & Q(user2=request.user))
+            ).first()
+
+            if friendship:
+                friendship.delete()
+
+            # Можна також видалити чат, якщо потрібно, або залишити
+            chat.delete()
+
+        return redirect('friends')  # або куди потрібно
+
+    else:
+        return HttpResponseForbidden("Метод не дозволений.")

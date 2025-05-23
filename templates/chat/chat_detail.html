@@ -1,10 +1,25 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block content %}
 
 <h2>Чат</h2>
+
+{% if not chat.is_group %}
+  <div style="margin-bottom: 20px; display: flex; align-items: center;">
+    {% for user in chat.participants.all %}
+      {% if user != request.user %}
+        <strong style="margin-right: 10px;">Чат з {{ user.username }}</strong>
+        <form method="post" action="{% url 'remove_friend' chat.id %}" style="margin-left: auto;">
+          {% csrf_token %}
+          <button type="submit" onclick="return confirm('Ви точно хочете видалити цього друга?')" style="background: none; border: none; color: red; font-weight: bold; cursor: pointer;">
+            ❌ Видалити друга
+          </button>
+        </form>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endif %}
 
 <div>
   {% for message in messages %}
