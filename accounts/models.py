@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.exceptions import ValidationError
 import random
+from django.utils import timezone
 
 
 class CustomUser(AbstractUser):
@@ -13,6 +14,7 @@ class CustomUser(AbstractUser):
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     friend_id = models.CharField(max_length=7, unique=True, blank=True, null=True)
+    last_seen = models.DateTimeField(default=timezone.now)
 
     def is_moderator(self):
         return self.role in ['moderator', 'admin']

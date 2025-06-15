@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  /* Контейнер для Discord-стилю */
+  .discord-content {
+    background-color: #2f3136;
+    color: #dcddde;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    border-radius: 10px;
+  }
+
+  .discord-content h2, .discord-content h3 {
+    color: #fff;
+  }
+
+  .discord-content a {
+    color: #00b0f4;
+    text-decoration: none;
+  }
+  .discord-content a:hover {
+    text-decoration: underline;
+  }
+
+  .discord-content .btn {
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 6px 12px;
+    transition: background-color 0.2s ease;
+  }
+
+  .discord-content .btn-success {
+    background-color: #43b581;
+    border: none;
+    color: #fff;
+  }
+  .discord-content .btn-success:hover {
+    background-color: #3a9d74;
+  }
+
+  .discord-content .btn-primary {
+    background-color: #5865f2;
+    border: none;
+    color: #fff;
+  }
+  .discord-content .btn-primary:hover {
+    background-color: #4752c4;
+  }
+
+  .discord-content .btn-secondary {
+    background-color: #2f3136;
+    border: none;
+    color: #b9bbbe;
+  }
+  .discord-content .btn-secondary:hover {
+    background-color: #232428;
+  }
+
+  .discord-content .btn-outline-success {
+    color: #43b581;
+    border: 1.5px solid #43b581;
+    background-color: transparent;
+  }
+  .discord-content .btn-outline-success:hover {
+    background-color: #43b581;
+    color: #fff;
+  }
+
+  .discord-content input.form-control {
+    background-color: #202225;
+    border: 1px solid #72767d;
+    color: #dcddde;
+    border-radius: 5px;
+  }
+  .discord-content input.form-control::placeholder {
+    color: #72767d;
+  }
+
+  .discord-content ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .discord-content li {
+    background-color: #2f3136;
+    padding: 10px 15px;
+    border-radius: 7px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .discord-content li a {
+    flex-grow: 1;
+  }
+
+  .discord-content .text-muted {
+    color: #72767d;
+    margin-left: 8px;
+    font-size: 0.85rem;
+  }
+
+  .discord-content form.inline-form {
+    display: inline;
+  }
+</style>
+
+<div class="discord-content">
+
+  <h2>Групи</h2>
+  <a href="{% url 'groups:create_group' %}" class="btn btn-success mb-3">Створити групу</a>
+
+  <form method="get" class="mb-3" style="display:flex; gap: 8px; max-width: 360px;">
+    <input type="text" name="q" placeholder="Пошук груп..." value="{{ q }}" class="form-control" style="flex-grow:1;">
+    <button type="submit" class="btn btn-primary">Пошук</button>
+    {% if q %}
+      <a href="{% url 'groups:group_list' %}" class="btn btn-secondary">Скинути</a>
+    {% endif %}
+  </form>
+
+  <h3>Ваші групи</h3>
+  <ul>
+    {% for group in groups_joined %}
+      <li>
+        <a href="{% url 'groups:group_detail' group.id %}">{{ group.name }}</a>
+        <span class="text-muted">— {{ group.description }}</span>
+        <span class="text-muted">(ви учасник)</span>
+
+        {% if request.user == group.owner %}
+          <form action="{% url 'groups:group_delete' group.id %}" method="post" class="inline-form" style="margin-left: 12px;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger" style="background-color:#ed4245; border:none;" onclick="return confirm('Ви дійсно хочете видалити групу?');">
+              Видалити
+            </button>
+          </form>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>Ви не є учасником жодної групи.</li>
+    {% endfor %}
+  </ul>
+
+  <h3>Інші групи</h3>
+  <ul>
+    {% for group in groups_not_joined %}
+      <li>
+        <a href="{% url 'groups:group_detail' group.id %}">{{ group.name }}</a>
+        <span class="text-muted">— {{ group.description }}</span>
+        {% if request.user.is_authenticated %}
+          <form action="{% url 'groups:join_group' group.id %}" method="post" class="inline-form" style="margin-left: 12px;">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-outline-success">Приєднатися</button>
+          </form>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>Немає доступних груп.</li>
+    {% endfor %}
+  </ul>
+
+</div>
+
+{% endblock %}

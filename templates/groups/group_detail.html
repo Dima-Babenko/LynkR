@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+  .content-wrapper {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .main-content {
+    flex: 1;
+    background-color: #2f3136;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.2);
+    overflow-y: auto;
+    max-height: 80vh;
+    color: #dcddde;
+  }
+
+  h2, h3 {
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  p {
+    color: #b9bbbe;
+    margin-bottom: 16px;
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid #202225;
+    margin: 20px 0;
+  }
+
+  button.btn {
+    font-weight: 600;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border: none;
+    font-size: 1em;
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  button.btn-primary {
+    background-color: #5865f2;
+    color: #fff;
+  }
+
+  button.btn-primary:hover {
+    background-color: #4752c4;
+  }
+
+  button.btn-warning {
+    background-color: #f04747;
+    color: #fff;
+  }
+
+  button.btn-warning:hover {
+    background-color: #b33838;
+  }
+
+  button.btn-success {
+    background-color: #43b581;
+    color: #fff;
+  }
+
+  button.btn-success:hover {
+    background-color: #399d6c;
+  }
+
+  button.btn-secondary {
+    background-color: #4f545c;
+    color: #fff;
+  }
+
+  button.btn-secondary:hover {
+    background-color: #40444b;
+  }
+
+  .sidebar {
+    width: 280px;
+    background: #2f3136;
+    border-radius: 8px;
+    padding: 20px;
+    height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.2);
+    color: #dcddde;
+  }
+
+  .sidebar h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-weight: 700;
+    font-size: 1.25em;
+    color: #fff;
+    border-bottom: 1px solid #202225;
+    padding-bottom: 10px;
+  }
+
+  .role-group {
+    margin-bottom: 20px;
+  }
+
+  .role-group h5 {
+    font-weight: 600;
+    font-size: 0.85em;
+    color: #8e9297;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .member-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .member-list li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    cursor: default;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  .member-list li:hover {
+    background-color: #3a3c43;
+  }
+
+  .member-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 12px;
+    flex-shrink: 0;
+    border: 2px solid transparent;
+    transition: border-color 0.15s ease-in-out;
+  }
+
+  .role-owner .member-avatar { border-color: #faa61a; }
+  .role-admin .member-avatar { border-color: #f04747; }
+  .role-moderator .member-avatar { border-color: #43b581; }
+
+  .member-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .member-name {
+    font-size: 1em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .member-name.role-owner { color: #faa61a; }
+  .member-name.role-admin { color: #f04747; }
+  .member-name.role-moderator { color: #43b581; }
+  .member-name.role-member { color: #dcddde; }
+
+  ul.posts-list {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  ul.posts-list li {
+    background-color: #202225;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    color: #dcddde;
+  }
+
+  ul.posts-list li strong {
+    color: #5865f2;
+  }
+
+  form {
+    margin-top: 15px;
+  }
+
+  form textarea, form input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #202225;
+    color: #dcddde;
+    font-size: 1em;
+    resize: vertical;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+  }
+
+  form textarea:focus, form input[type="text"]:focus {
+    outline: none;
+    background-color: #2f3136;
+  }
+</style>
+
+<div class="content-wrapper">
+
+  <main class="main-content">
+    <h2>{{ group.name|escape }}</h2>
+    <p>{{ group.description|linebreaksbr|escape }}</p>
+
+    {% if is_member %}
+      <form action="{% url 'groups:leave_group' group.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-warning">Вийти з групи</button>
+      </form>
+
+      <hr>
+
+      {% if membership.role in 'owner moderator admin' %}
+        <h3>Додати пост</h3>
+        <form action="{% url 'groups:create_group_post' group.id %}" method="post">
+          {% csrf_token %}
+          {{ post_form.as_p }}
+          <button type="submit" class="btn btn-primary">Опублікувати</button>
+        </form>
+      {% else %}
+        <p><em>Лише модератори, адміністратори та власник можуть створювати пости.</em></p>
+      {% endif %}
+
+      <hr>
+
+      <h3>Пости в групі</h3>
+      <ul class="posts-list">
+        {% for post in posts %}
+          <li><strong>{{ post.author.username|escape }}</strong>: {{ post.content|linebreaksbr|escape }}</li>
+        {% empty %}
+          <li>Немає постів.</li>
+        {% endfor %}
+      </ul>
+
+    {% else %}
+      <form method="post">
+        {% csrf_token %}
+        <p>Бажаєте приєднатися до цієї групи?</p>
+        <button type="submit" name="confirm" class="btn btn-success">Так</button>
+        <button type="submit" name="cancel" class="btn btn-secondary">Ні</button>
+      </form>
+    {% endif %}
+  </main>
+
+  <aside class="sidebar">
+    <h4>Учасники групи</h4>
+    {% regroup members by role as members_by_role %}
+
+    {% for group_role in members_by_role %}
+      {% with group_role.grouper as role_code %}
+      <section class="role-group role-{{ role_code|lower }}">
+        <h5>
+          {% if role_code == 'owner' %}Власник
+          {% elif role_code == 'admin' %}Адміністратори
+          {% elif role_code == 'moderator' %}Модератори
+          {% else %}Учасники
+          {% endif %}
+        </h5>
+        <ul class="member-list">
+          {% for membership in group_role.list %}
+            <li>
+              <div class="member-avatar role-{{ membership.role }}">
+                {% if membership.user.avatar %}
+                  <img src="{{ membership.user.avatar.url }}" alt="{{ membership.user.username }}">
+                {% else %}
+                  <img src="{% static 'default_avatar.png' %}" alt="Avatar">
+                {% endif %}
+              </div>
+              <div class="member-name role-{{ membership.role }}">
+                {{ membership.user.username|escape }}
+
+                {% if request.user == group.owner and membership.user != group.owner %}
+                  <form action="{% url 'groups:change_member_role' group.id membership.user.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <select name="new_role" onchange="this.form.submit()" style="margin-left: 5px;">
+                      <option value="member" {% if membership.role == 'member' %}selected{% endif %}>Учасник</option>
+                      <option value="moderator" {% if membership.role == 'moderator' %}selected{% endif %}>Модератор</option>
+                      <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>Адміністратор</option>
+                    </select>
+                  </form>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endwith %}
+    {% endfor %}
+  </aside>
+</div>
+
+{% endblock %}

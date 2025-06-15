@@ -1,40 +1,153 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load chat_tags %}
+
+{% block extra_head %}
+<style>
+  body {
+    background-color: #2f3136;
+    color: #dcddde;
+  }
+
+  /* Статус користувача */
+  .user-status {
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  /* Контейнер повідомлень */
+  #chat-messages {
+    background-color: #36393f;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+
+  #chat-messages .message {
+    margin-bottom: 10px;
+    padding: 5px 10px;
+    background-color: #40444b;
+    border-radius: 5px;
+  }
+
+  #chat-messages .message .username {
+    color: #7289da;
+    font-weight: bold;
+  }
+
+  #chat-messages .message .timestamp {
+    font-size: 0.85em;
+    color: #999;
+    margin-left: 5px;
+  }
+
+  /* Форма */
+  #chat-form {
+    margin-top: 15px;
+  }
+
+  #chat-form input[type="text"],
+  #chat-form textarea {
+    background-color: #40444b;
+    color: #dcddde;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 8px;
+    width: 100%;
+  }
+
+  #chat-form button {
+    background-color: #7289da;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-top: 8px;
+    cursor: pointer;
+  }
+
+  #chat-form button:hover {
+    background-color: #5b6eae;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<h2>Чат</h2>
-
-{% if not chat.is_group %}
-  <div style="margin-bottom: 20px; display: flex; align-items: center;">
-    {% for user in chat.participants.all %}
-      {% if user != request.user %}
-        <strong style="margin-right: 10px;">Чат з {{ user.username }}</strong>
-        <form method="post" action="{% url 'remove_friend' chat.id %}" style="margin-left: auto;">
-          {% csrf_token %}
-          <button type="submit" onclick="return confirm('Ви точно хочете видалити цього друга?')" style="background: none; border: none; color: red; font-weight: bold; cursor: pointer;">
-            ❌ Видалити друга
-          </button>
-        </form>
-      {% endif %}
-    {% endfor %}
-  </div>
-{% endif %}
-
-<div>
-  {% for message in messages %}
-    <p><strong>{{ message.sender.username }}:</strong> {{ message.text }}</p>
-    {% if message.file %}
-      <p><a href="{{ message.file.url }}">📎 Файл</a></p>
-    {% endif %}
-  {% endfor %}
+<!-- Статус співрозмовника -->
+<div class="user-status">
+  {{ other_user.username }} —
+  {% if is_online %}
+    <span style="color: #43b581;">онлайн</span>
+  {% else %}
+    <span style="color: gray;">був у мережі {{ other_user.last_seen|last_seen_display }}</span>
+  {% endif %}
 </div>
 
-<form method="post" enctype="multipart/form-data">
+<!-- Контейнер повідомлень -->
+<div id="chat-messages">
+  {% include 'chat/_messages.html' with messages=messages %}
+</div>
+
+<!-- Форма відправки -->
+<form method="post" enctype="multipart/form-data" id="chat-form">
   {% csrf_token %}
-  <textarea name="text" rows="2" placeholder="Введіть повідомлення..."></textarea>
-  <input type="file" name="file">
+  {{ form.as_p }}
   <button type="submit">Надіслати</button>
 </form>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function fetchMessages() {
+    try {
+      const response = await fetch("{% url 'chat:fetch_messages' chat.id %}");
+      if (!response.ok) throw new Error('Помилка мережі');
+      const data = await response.json();
+      const chatBox = document.getElementById("chat-messages");
+      const oldHeight = chatBox.scrollHeight;
+      chatBox.innerHTML = data.html;
+
+      if (Math.abs(chatBox.scrollTop + chatBox.clientHeight - oldHeight) < 50) {
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    } catch (error) {
+      console.error('Не вдалося завантажити повідомлення:', error);
+    }
+  }
+
+  setInterval(fetchMessages, 5000);
+
+  window.addEventListener("load", () => {
+    const chatBox = document.getElementById("chat-messages");
+    chatBox.scrollTop = chatBox.scrollHeight;
+  });
+
+  const form = document.getElementById('chat-form');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action || window.location.href, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+      });
+      if (!response.ok) throw new Error('Помилка відправки повідомлення');
+
+      form.reset();
+      fetchMessages();
+    } catch (error) {
+      alert('Не вдалося надіслати повідомлення.');
+      console.error(error);
+    }
+  });
+</script>
 {% endblock %}

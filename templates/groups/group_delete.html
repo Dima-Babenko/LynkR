@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+  <h2>Видалити групу "{{ group.name }}"?</h2>
+  <p>Ця дія необоротна. Ви впевнені?</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Видалити</button>
+    <a href="{% url 'groups:group_detail' group.id %}" class="btn btn-secondary">Відмінити</a>
+  </form>
+
+{% endblock %}

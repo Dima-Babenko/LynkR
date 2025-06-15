@@ -1,0 +1,30 @@
+{% for message in messages %}
+  <div style="margin-bottom: 15px; padding: 10px; background-color: #f0f0f0; border-radius: 8px;">
+    <p><strong>{{ message.sender.username }}:</strong></p>
+    <p>{{ message.text|linebreaksbr }}</p>
+
+    {% if message.file %}
+      {% with message.file.name|lower as filename %}
+        {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
+          <img src="{{ message.file.url }}" alt="Зображення" style="max-width: 100%; height: auto; border-radius: 5px;">
+        {% elif ".mp3" in filename %}
+          <audio controls>
+            <source src="{{ message.file.url }}" type="audio/mpeg">
+            Ваш браузер не підтримує аудіо.
+          </audio>
+        {% elif ".mp4" in filename %}
+          <video controls style="max-width: 100%; border-radius: 5px;">
+            <source src="{{ message.file.url }}" type="video/mp4">
+            Ваш браузер не підтримує відео.
+          </video>
+        {% else %}
+          <p><a href="{{ message.file.url }}" target="_blank">📎 Завантажити файл</a></p>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
+
+    <small>{{ message.timestamp|date:"d.m.Y H:i" }}</small>
+  </div>
+{% empty %}
+  <p>Немає повідомлень.</p>
+{% endfor %}

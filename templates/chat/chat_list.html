@@ -40,9 +40,30 @@
     font-weight: 500;
     font-size: 16px;
   }
+
+  .group-chat-btn {
+    background-color: #5865f2;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 12px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s ease;
+  }
+
+  .group-chat-btn:hover {
+    background-color: #4752c4;
+  }
 </style>
 
 <h2 style="color:white;">Ваші чати</h2>
+
+<a href="{% url 'chat:create_group_chat' %}" class="group-chat-btn">➕ Створити груповий чат</a>
+
 <div class="chat-list">
   {% for chat in chats %}
     <a href="{% url 'chat:chat_detail' chat.id %}" class="chat-item">
@@ -50,7 +71,6 @@
         <img src="{% static 'img/group_icon.png' %}" class="chat-avatar" alt="group">
         <span class="chat-name">{{ chat.name }}</span>
       {% else %}
-        {# Знайдемо одного учасника, що не є поточним користувачем #}
         {% for user in chat.participants.all %}
           {% if user != request.user %}
             {% if user.avatar %}
