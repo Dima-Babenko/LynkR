@@ -202,6 +202,17 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'groups:group_list' %}">👥 Групи</a>
                     </li>
+                    <li class="nav-item position-relative">
+                        <a class="nav-link" href="{% url 'notification_list' %}">
+                            🔔 Сповіщення
+                            {% if unread_notifications_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_notifications_count }}
+                                    <span class="visually-hidden">непрочитані</span>
+                                </span>
+                            {% endif %}
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link text-danger" href="{% url 'logout' %}">🚪 Вихід</a>
                     </li>

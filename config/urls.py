@@ -11,6 +11,8 @@ urlpatterns = [
     path('chat/', include('chat.urls')),
     path('admin/', admin.site.urls),
     path('groups/', include('groups.urls', namespace='groups')),
+    path('notifications/', include('notifications.urls')),
+
 ]
 
 if settings.DEBUG:
