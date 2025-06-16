@@ -7,6 +7,7 @@
     margin-bottom: 15px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    word-break: break-word;
   }
   .discord-message strong {
     color: #fff;
@@ -15,9 +16,10 @@
   .discord-message p {
     margin: 6px 0;
     white-space: pre-wrap;
-    word-wrap: break-word;
   }
-  .discord-message img, .discord-message video, .discord-message audio {
+  .discord-message img,
+  .discord-message video,
+  .discord-message audio {
     margin-top: 8px;
     border-radius: 6px;
     max-width: 100%;
@@ -41,14 +43,14 @@
 </style>
 
 {% for message in messages %}
-  <div class="discord-message">
+  <div class="discord-message" role="article" aria-label="Повідомлення від {{ message.sender.username }}">
     <p><strong>{{ message.sender.username }}:</strong></p>
     <p>{{ message.text|linebreaksbr }}</p>
 
     {% if message.file %}
       {% with message.file.name|lower as filename %}
         {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
-          <img src="{{ message.file.url }}" alt="Зображення">
+          <img src="{{ message.file.url }}" alt="Зображення від {{ message.sender.username }}">
         {% elif ".mp3" in filename %}
           <audio controls>
             <source src="{{ message.file.url }}" type="audio/mpeg">
@@ -60,7 +62,7 @@
             Ваш браузер не підтримує відео.
           </video>
         {% else %}
-          <p><a href="{{ message.file.url }}" target="_blank" class="discord-attachment-link">📎 Завантажити файл</a></p>
+          <p><a href="{{ message.file.url }}" target="_blank" rel="noopener noreferrer" class="discord-attachment-link">📎 Завантажити файл</a></p>
         {% endif %}
       {% endwith %}
     {% endif %}

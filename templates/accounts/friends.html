@@ -1,80 +1,219 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Друзі</h2>
-{% if friends %}
-<ul>
-    {% for friend in friends %}
-        <li>{{ friend.username }} ({{ friend.friend_id }})</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>У вас ще немає друзів.</p>
-{% endif %}
+<style>
+  .friends-container {
+    max-width: 900px;
+    margin: 40px auto;
+    background-color: #2f3136; /* темний фон для блоку */
+    color: #d1d3d6;
+    padding: 35px 40px;
+    border-radius: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.8),
+      inset 0 0 25px #1a1c1f;
+  }
 
-<hr>
+  h2, h3 {
+    color: #e0e2e6;
+    font-weight: 700;
+    margin-bottom: 28px;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 6px #5865f2;
+  }
 
-<h3>Знайти користувача за friend ID</h3>
-<form method="get" action="{% url 'friends' %}">
-    <input type="text" name="friend_id" placeholder="Введіть friend ID">
-    <button type="submit">Знайти</button>
-</form>
+  ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 40px;
+  }
 
-{% if found_user %}
-    <hr>
-    <h3>Знайдений користувач:</h3>
-    <p><strong>{{ found_user.username }}</strong> ({{ found_user.friend_id }})</p>
+  ul li {
+    background: #36393f;
+    padding: 16px 22px;
+    margin-bottom: 14px;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #b9bbbe;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    transition:
+      background-color 0.3s ease,
+      transform 0.15s ease,
+      box-shadow 0.3s ease;
+    cursor: default;
+  }
 
-    {% if already_friends %}
-        <p>✅ Ви вже друзі!</p>
-    {% elif already_subscribed %}
-        <p>🔔 Ви вже підписані на цього користувача. Очікується підписка у відповідь.</p>
-    {% else %}
-        <form method="post" action="{% url 'subscribe' %}">
-            {% csrf_token %}
-            <input type="hidden" name="friend_id" value="{{ found_user.friend_id }}">
-            <button type="submit">Підписатись</button>
-        </form>
-    {% endif %}
-{% endif %}
+  ul li:hover {
+    background: #40444b;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 18px rgba(88,101,242,0.7);
+    color: #e3e5e8;
+  }
 
-<hr>
+  .user-id {
+    font-weight: 400;
+    font-style: italic;
+    font-size: 0.9rem;
+    opacity: 0.5;
+    user-select: none;
+  }
 
-<h3>Ваші підписки</h3>
-<ul>
-    {% for sub in user.following.all %}
-        <li>{{ sub.following.username }} ({{ sub.following.friend_id }})</li>
-    {% empty %}
-        <li>Немає підписок.</li>
-    {% endfor %}
-</ul>
+  form.inline-form {
+    display: inline;
+    margin-left: 12px;
+  }
 
-<h3>Ваші підписники</h3>
-<ul>
-    {% for sub in user.followers.all %}
-        <li>{{ sub.follower.username }} ({{ sub.follower.friend_id }})</li>
-    {% empty %}
-        <li>Немає підписників.</li>
-    {% endfor %}
-</ul>
+  button, input[type="submit"] {
+    cursor: pointer;
+    background: #5865f2;
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    box-shadow:
+      0 6px 12px rgba(88,101,242,0.9);
+    transition:
+      background-color 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.2s ease;
+    user-select: none;
+  }
 
-<hr>
-<h3>Підписались на вас, але ви ще не підписались:</h3>
-<ul>
-    {% for sub in user.followers.all %}
-        {% if sub.follower.id not in following_ids %}
-            <li>
-                {{ sub.follower.username }} ({{ sub.follower.friend_id }})
-                <form method="post" action="{% url 'subscribe' %}" style="display:inline;">
-                    {% csrf_token %}
-                    <input type="hidden" name="friend_id" value="{{ sub.follower.friend_id }}">
-                    <button type="submit">Підписатися у відповідь</button>
-                </form>
-            </li>
-        {% endif %}
-    {% empty %}
-        <li>Немає нових підписників.</li>
-    {% endfor %}
-</ul>
+  button:hover, input[type="submit"]:hover {
+    background-color: #4752c4;
+    box-shadow:
+      0 8px 16px rgba(71,82,196,1);
+    transform: translateY(-3px);
+  }
+
+  input[type="text"] {
+    width: 72%;
+    padding: 12px 16px;
+    border-radius: 25px;
+    border: none;
+    background-color: #202225;
+    color: #d1d3d6;
+    font-size: 1.1rem;
+    font-weight: 600;
+    box-shadow:
+      inset 0 0 8px #101113;
+    transition: box-shadow 0.3s ease;
+  }
+
+  input[type="text"]:focus {
+    outline: none;
+    box-shadow:
+      0 0 12px #5865f2,
+      inset 0 0 12px #5865f2;
+  }
+
+  p.status {
+    font-weight: 700;
+    margin-top: 12px;
+    margin-bottom: 25px;
+    color: #43b581; /* зелений */
+    text-shadow: 0 0 5px #2f7a4f;
+  }
+
+  p.status.warning {
+    color: #faa61a; /* помаранчевий */
+    text-shadow: 0 0 5px #a76a0e;
+  }
+
+  hr {
+    border: none;
+    height: 1px;
+    background: #393c43;
+    margin: 40px 0;
+    box-shadow: 0 1px 2px #22252a;
+  }
+</style>
+
+<div class="friends-container">
+
+  <h2>Друзі</h2>
+  {% if friends %}
+  <ul>
+      {% for friend in friends %}
+          <li>{{ friend.username }} <span style="opacity:0.7;">({{ friend.friend_id }})</span></li>
+      {% endfor %}
+  </ul>
+  {% else %}
+  <p>У вас ще немає друзів.</p>
+  {% endif %}
+
+  <hr>
+
+  <h3>Знайти користувача за friend ID</h3>
+  <form method="get" action="{% url 'friends' %}">
+      <input type="text" name="friend_id" placeholder="Введіть friend ID" autocomplete="off" required>
+      <button type="submit">Знайти</button>
+  </form>
+
+  {% if found_user %}
+      <hr>
+      <h3>Знайдений користувач:</h3>
+      <p><strong>{{ found_user.username }}</strong> <span style="opacity:0.7;">({{ found_user.friend_id }})</span></p>
+
+      {% if already_friends %}
+          <p class="status">✅ Ви вже друзі!</p>
+      {% elif already_subscribed %}
+          <p class="status warning">🔔 Ви вже підписані на цього користувача. Очікується підписка у відповідь.</p>
+      {% else %}
+          <form method="post" action="{% url 'subscribe' %}">
+              {% csrf_token %}
+              <input type="hidden" name="friend_id" value="{{ found_user.friend_id }}">
+              <button type="submit">Підписатись</button>
+          </form>
+      {% endif %}
+  {% endif %}
+
+  <hr>
+
+  <h3>Ваші підписки</h3>
+  <ul>
+      {% for sub in user.following.all %}
+          <li>{{ sub.following.username }} <span style="opacity:0.7;">({{ sub.following.friend_id }})</span></li>
+      {% empty %}
+          <li>Немає підписок.</li>
+      {% endfor %}
+  </ul>
+
+  <h3>Ваші підписники</h3>
+  <ul>
+      {% for sub in user.followers.all %}
+          <li>{{ sub.follower.username }} <span style="opacity:0.7;">({{ sub.follower.friend_id }})</span></li>
+      {% empty %}
+          <li>Немає підписників.</li>
+      {% endfor %}
+  </ul>
+
+  <hr>
+  <h3>Підписались на вас, але ви ще не підписались:</h3>
+  <ul>
+      {% for sub in user.followers.all %}
+          {% if sub.follower.id not in following_ids %}
+              <li>
+                  {{ sub.follower.username }} <span style="opacity:0.7;">({{ sub.follower.friend_id }})</span>
+                  <form method="post" action="{% url 'subscribe' %}" class="inline-form">
+                      {% csrf_token %}
+                      <input type="hidden" name="friend_id" value="{{ sub.follower.friend_id }}">
+                      <button type="submit">Підписатися у відповідь</button>
+                  </form>
+              </li>
+          {% endif %}
+      {% empty %}
+          <li>Немає нових підписників.</li>
+      {% endfor %}
+  </ul>
+
+</div>
 
 {% endblock %}

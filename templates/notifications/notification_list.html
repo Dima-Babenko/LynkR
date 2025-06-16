@@ -1,13 +1,114 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h2>Сповіщення</h2>
-  <ul>
-    {% for n in notifications %}
-      <li {% if not n.is_read %} style="font-weight:bold;" {% endif %}>
-        {{ n.message }} - {{ n.created_at|date:"d.m.Y H:i" }}
-      </li>
-    {% empty %}
-      <li>Немає сповіщень</li>
-    {% endfor %}
-  </ul>
+
+<style>
+  body {
+    background-color: #2b2a2a;
+    color: #ddd;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 24px;
+    color: #e0e0e0;
+  }
+
+  ul.notifications-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    max-width: 700px;
+    max-height: 75vh;
+    overflow-y: auto;
+    background: #121212;
+    border-radius: 12px;
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.85),
+      inset 0 0 8px rgba(255, 255, 255, 0.03);
+    border: 1px solid #222;
+  }
+
+  ul.notifications-list li {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #222;
+    cursor: default;
+    position: relative;
+    transition: background-color 0.25s ease;
+  }
+
+  ul.notifications-list li:last-child {
+    border-bottom: none;
+  }
+
+  ul.notifications-list li.unread {
+    background-color: #1a1a1a;
+    font-weight: 600;
+  }
+
+  ul.notifications-list li.unread::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #999;
+    border-radius: 50%;
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  ul.notifications-list li:hover {
+    background-color: #292929;
+  }
+
+  .notification-message {
+    flex: 1;
+    margin-left: 30px; /* для крапки непрочитаних */
+    font-size: 1rem;
+    line-height: 1.4;
+    word-break: break-word;
+    color: #ccc;
+  }
+
+  .notification-date {
+    font-size: 0.85rem;
+    color: #777;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-left: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    user-select: none;
+  }
+
+  /* Стиль скроллбару для Webkit */
+  ul.notifications-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  ul.notifications-list::-webkit-scrollbar-track {
+    background: #121212;
+    border-radius: 12px;
+  }
+  ul.notifications-list::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 12px;
+  }
+</style>
+
+<h2>🔔 Сповіщення</h2>
+
+<ul class="notifications-list">
+  {% for n in notifications %}
+    <li class="{% if not n.is_read %}unread{% endif %}">
+      <div class="notification-message">{{ n.message|linebreaksbr }}</div>
+      <div class="notification-date">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+    </li>
+  {% empty %}
+    <li>Немає сповіщень</li>
+  {% endfor %}
+</ul>
+
 {% endblock %}

@@ -3,88 +3,122 @@
 
 {% block content %}
 <style>
-  .chat-list {
+  .chat-container {
+    max-width: 360px;
     background-color: #2f3136;
     color: #fff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    margin: 30px auto;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  h2 {
+    margin-bottom: 16px;
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #fff;
+    text-align: center;
+  }
+
+  .group-chat-btn {
+    display: block;
+    background-color: #5865f2;
+    color: white;
+    padding: 10px 18px;
+    border: none;
     border-radius: 8px;
-    padding: 10px;
-    width: 300px;
+    font-weight: 600;
+    font-size: 1rem;
+    margin: 0 auto 20px;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+    transition: background-color 0.3s ease;
+    width: fit-content;
+  }
+  .group-chat-btn:hover {
+    background-color: #4752c4;
+  }
+
+  .chat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
 
   .chat-item {
     display: flex;
     align-items: center;
-    padding: 8px;
-    margin-bottom: 6px;
-    border-radius: 5px;
-    transition: background 0.2s;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background-color: #36393f;
     text-decoration: none;
     color: inherit;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.25s ease;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
   }
-
   .chat-item:hover {
     background-color: #40444b;
     cursor: pointer;
   }
 
   .chat-avatar {
-    width: 40px;
-    height: 40px;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 10px;
-    border: 2px solid #5865f2;
+    border: 2.5px solid #5865f2;
+    background-color: #202225;
   }
 
   .chat-name {
-    font-weight: 500;
-    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #e3e5e8;
   }
 
-  .group-chat-btn {
-    background-color: #5865f2;
-    color: white;
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 500;
-    font-size: 14px;
-    margin-bottom: 12px;
-    text-decoration: none;
-    display: inline-block;
-    transition: background 0.3s ease;
-  }
-
-  .group-chat-btn:hover {
-    background-color: #4752c4;
+  p.empty-msg {
+    color: #72767d;
+    font-style: italic;
+    text-align: center;
+    margin-top: 20px;
   }
 </style>
 
-<h2 style="color:white;">Ваші чати</h2>
+<div class="chat-container">
+  <h2>Ваші чати</h2>
 
-<a href="{% url 'chat:create_group_chat' %}" class="group-chat-btn">➕ Створити груповий чат</a>
+  <a href="{% url 'chat:create_group_chat' %}" class="group-chat-btn">➕ Створити груповий чат</a>
 
-<div class="chat-list">
-  {% for chat in chats %}
-    <a href="{% url 'chat:chat_detail' chat.id %}" class="chat-item">
-      {% if chat.is_group %}
-        <img src="{% static 'img/group_icon.png' %}" class="chat-avatar" alt="group">
-        <span class="chat-name">{{ chat.name }}</span>
-      {% else %}
-        {% for user in chat.participants.all %}
-          {% if user != request.user %}
-            {% if user.avatar %}
-              <img src="{{ user.avatar.url }}" class="chat-avatar" alt="{{ user.username }}">
-            {% else %}
-              <img src="{% static 'img/default_avatar.png' %}" class="chat-avatar" alt="default avatar">
+  <div class="chat-list">
+    {% for chat in chats %}
+      <a href="{% url 'chat:chat_detail' chat.id %}" class="chat-item" title="{{ chat.name }}">
+        {% if chat.is_group %}
+          <img src="{% static 'img/group_icon.png' %}" class="chat-avatar" alt="Group icon" />
+          <span class="chat-name">{{ chat.name }}</span>
+        {% else %}
+          {% for user in chat.participants.all %}
+            {% if user != request.user %}
+              {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" class="chat-avatar" alt="{{ user.username }}'s avatar" />
+              {% else %}
+                <img src="{% static 'img/default_avatar.png' %}" class="chat-avatar" alt="Default avatar" />
+              {% endif %}
+              <span class="chat-name">{{ user.username }}</span>
             {% endif %}
-            <span class="chat-name">{{ user.username }}</span>
-          {% endif %}
-        {% endfor %}
-      {% endif %}
-    </a>
-  {% empty %}
-    <p style="color: gray;">У вас ще немає чатів</p>
-  {% endfor %}
+          {% endfor %}
+        {% endif %}
+      </a>
+    {% empty %}
+      <p class="empty-msg">У вас ще немає чатів</p>
+    {% endfor %}
+  </div>
 </div>
 {% endblock %}

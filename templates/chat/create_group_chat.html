@@ -1,12 +1,98 @@
 {% extends 'base.html' %}
 {% block content %}
+<style>
+  .create-group-chat-container {
+    max-width: 480px;
+    background-color: #2f3136;
+    color: #dcddde;
+    padding: 24px 30px;
+    border-radius: 12px;
+    margin: 40px auto;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  }
 
-<h2>Створити груповий чат</h2>
+  h2 {
+    margin-bottom: 24px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #fff;
+    text-align: center;
+  }
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Створити</button>
-</form>
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
 
+  label {
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"], input[type="email"], input[type="password"], textarea, select {
+    background-color: #202225;
+    border: 1.5px solid #72767d;
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: #dcddde;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+  }
+
+  input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #5865f2;
+    background-color: #2a2d31;
+  }
+
+  .btn-primary {
+    background-color: #5865f2;
+    color: #fff;
+    font-weight: 700;
+    padding: 12px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .btn-primary:hover {
+    background-color: #4752c4;
+  }
+
+  /* Підказки для помилок (якщо є) */
+  .errorlist {
+    color: #ed4245;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    list-style: none;
+    padding-left: 0;
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="create-group-chat-container">
+  <h2>Створити груповий чат</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}
+          <small style="color:#72767d;">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <p class="errorlist">{{ error }}</p>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">Створити</button>
+  </form>
+</div>
 {% endblock %}

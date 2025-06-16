@@ -1,19 +1,147 @@
 {% extends 'base.html' %}
-
 {% load static %}
 
 {% block content %}
+<style>
+  .edit-profile-container {
+    max-width: 450px;
+    margin: 40px auto;
+    background-color: #36393f;
+    padding: 30px 25px;
+    border-radius: 12px;
+    color: #dcddde;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
 
-<h2>Редагування профілю</h2>
-<form method="post" enctype="multipart/form-data">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  <p>{{ form.username.label_tag }} {{ form.username }}</p>
-  <p>{{ form.email.label_tag }} {{ form.email }}</p>
-  <p>{{ form.avatar.label_tag }} {{ form.avatar }}</p>
-  <p>{{ form.friend_id.label_tag }} {{ form.friend_id }}</p>
-  <button type="submit">Зберегти</button>
-</form>
+  .edit-profile-container h2 {
+    color: #fff;
+    margin-bottom: 25px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    text-align: center;
+  }
 
+  form p {
+    margin-bottom: 18px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #b9bbbe;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="file"],
+  input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid #72767d;
+    background-color: #202225;
+    color: #dcddde;
+    font-size: 1rem;
+    outline-offset: 2px;
+    outline-color: transparent;
+    transition: outline-color 0.3s ease;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="file"]:focus,
+  input[type="number"]:focus {
+    outline-color: #5865f2;
+    border-color: #5865f2;
+  }
+
+  button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 12px 0;
+    background-color: #5865f2;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  button[type="submit"]:hover {
+    background-color: #4752c4;
+  }
+
+  .non-field-errors {
+    background-color: #ed4245;
+    padding: 10px 15px;
+    border-radius: 6px;
+    color: #fff;
+    margin-bottom: 15px;
+  }
+
+.current-avatar {
+  margin-top: 8px;
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #5865f2;
+}
+</style>
+
+<div class="edit-profile-container">
+  <h2>Редагування профілю</h2>
+
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="non-field-errors">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <p>
+      {{ form.username.label_tag }}
+      {{ form.username }}
+      {% if form.username.errors %}
+        <span style="color:#ed4245; font-size:0.9rem;">{{ form.username.errors.0 }}</span>
+      {% endif %}
+    </p>
+
+    <p>
+      {{ form.email.label_tag }}
+      {{ form.email }}
+      {% if form.email.errors %}
+        <span style="color:#ed4245; font-size:0.9rem;">{{ form.email.errors.0 }}</span>
+      {% endif %}
+    </p>
+
+    <p>
+      {{ form.avatar.label_tag }}
+      {{ form.avatar }}
+      {% if form.avatar.errors %}
+        <span style="color:#ed4245; font-size:0.9rem;">{{ form.avatar.errors.0 }}</span>
+      {% endif %}
+      {% if user.avatar %}
+        <img src="{{ user.avatar.url }}" alt="Поточна аватарка" class="current-avatar">
+      {% endif %}
+    </p>
+
+    <p>
+      {{ form.friend_id.label_tag }}
+      {{ form.friend_id }}
+      {% if form.friend_id.errors %}
+        <span style="color:#ed4245; font-size:0.9rem;">{{ form.friend_id.errors.0 }}</span>
+      {% endif %}
+    </p>
+
+    <button type="submit">Зберегти</button>
+  </form>
+</div>
 
 {% endblock %}

@@ -1,9 +1,90 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<style>
+  body {
+    background-color: #121212;
+    color: #ddd;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  h2 {
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 30px;
+    color: #e0e0e0;
+    text-align: center;
+  }
+
+  form {
+    max-width: 480px;
+    margin: 0 auto;
+    background-color: #1e1e1e;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow:
+      0 6px 20px rgba(0,0,0,0.8),
+      inset 0 0 8px rgba(255,255,255,0.05);
+  }
+
+  form p {
+    margin-bottom: 20px;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #bbb;
+    font-size: 1rem;
+  }
+
+  form input[type="text"],
+  form textarea,
+  form select {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background-color: #121212;
+    color: #eee;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.25s ease;
+    resize: vertical;
+  }
+
+  form input[type="text"]:focus,
+  form textarea:focus,
+  form select:focus {
+    outline: none;
+    border-color: #43b581;
+    background-color: #181818;
+  }
+
+  button.btn {
+    display: block;
+    width: 100%;
+    padding: 14px 0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    background-color: #43b581;
+    transition: background-color 0.25s ease;
+    margin-top: 15px;
+  }
+
+  button.btn:hover {
+    background-color: #399d6c;
+  }
+</style>
+
 <h2>Створити нову групу</h2>
 
-<form method="post">
+<form method="post" novalidate>
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit" class="btn btn-success">Створити</button>
