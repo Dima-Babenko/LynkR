@@ -1,30 +1,80 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <h2>Друзі</h2>
+{% if friends %}
 <ul>
     {% for friend in friends %}
         <li>{{ friend.username }} ({{ friend.friend_id }})</li>
-    {% empty %}
-        <li>У вас ще немає друзів.</li>
     {% endfor %}
 </ul>
+{% else %}
+<p>У вас ще немає друзів.</p>
+{% endif %}
+
 <hr>
-<h3>Знайти користувача</h3>
-<form method="post" action="{% url 'send_friend_request' %}">
-    {% csrf_token %}
+
+<h3>Знайти користувача за friend ID</h3>
+<form method="get" action="{% url 'friends' %}">
     <input type="text" name="friend_id" placeholder="Введіть friend ID">
-    <button type="submit">Додати</button>
+    <button type="submit">Знайти</button>
 </form>
+
+{% if found_user %}
+    <hr>
+    <h3>Знайдений користувач:</h3>
+    <p><strong>{{ found_user.username }}</strong> ({{ found_user.friend_id }})</p>
+
+    {% if already_friends %}
+        <p>✅ Ви вже друзі!</p>
+    {% elif already_subscribed %}
+        <p>🔔 Ви вже підписані на цього користувача. Очікується підписка у відповідь.</p>
+    {% else %}
+        <form method="post" action="{% url 'subscribe' %}">
+            {% csrf_token %}
+            <input type="hidden" name="friend_id" value="{{ found_user.friend_id }}">
+            <button type="submit">Підписатись</button>
+        </form>
+    {% endif %}
+{% endif %}
+
 <hr>
-<h3>Запити в друзі</h3>
+
+<h3>Ваші підписки</h3>
 <ul>
-    {% for req in requests %}
-        <li>{{ req.from_user.username }}
-            <a href="{% url 'respond_friend_request' req.id 'accept' %}">Прийняти</a>
-            <a href="{% url 'respond_friend_request' req.id 'reject' %}">Відхилити</a>
-        </li>
+    {% for sub in user.following.all %}
+        <li>{{ sub.following.username }} ({{ sub.following.friend_id }})</li>
     {% empty %}
-        <li>Немає нових запитів.</li>
+        <li>Немає підписок.</li>
     {% endfor %}
 </ul>
+
+<h3>Ваші підписники</h3>
+<ul>
+    {% for sub in user.followers.all %}
+        <li>{{ sub.follower.username }} ({{ sub.follower.friend_id }})</li>
+    {% empty %}
+        <li>Немає підписників.</li>
+    {% endfor %}
+</ul>
+
+<hr>
+<h3>Підписались на вас, але ви ще не підписались:</h3>
+<ul>
+    {% for sub in user.followers.all %}
+        {% if sub.follower.id not in following_ids %}
+            <li>
+                {{ sub.follower.username }} ({{ sub.follower.friend_id }})
+                <form method="post" action="{% url 'subscribe' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="friend_id" value="{{ sub.follower.friend_id }}">
+                    <button type="submit">Підписатися у відповідь</button>
+                </form>
+            </li>
+        {% endif %}
+    {% empty %}
+        <li>Немає нових підписників.</li>
+    {% endfor %}
+</ul>
+
 {% endblock %}

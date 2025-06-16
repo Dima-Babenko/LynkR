@@ -8,8 +8,5 @@ urlpatterns = [
     path('profile/', views.profile_view, name='profile'),
     path('profile/edit/', views.edit_profile_view, name='edit_profile'),
     path('friends/', views.friends_view, name='friends'),
-    path('friends/send/', views.send_friend_request, name='send_friend_request'),
-    path('friends/respond/<int:request_id>/<str:action>/', views.respond_to_request, name='respond_friend_request'),
-    path('friends/change_id/', views.change_friend_id, name='change_friend_id'),
-    path('remove-friend/<int:chat_id>/', views.remove_friend, name='remove_friend'),
+    path('friends/subscribe/', views.subscribe_view, name='subscribe'),
 ]
