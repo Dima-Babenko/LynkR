@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+  .star-rating {
+    direction: rtl;
+    display: inline-flex;
+    gap: 5px;
+    font-size: 1.5em;
+    justify-content: flex-start;
+  }
+
+  .star-rating input[type="radio"] {
+    display: none;
+  }
+
+  .star-rating label {
+    color: #444;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+  }
+
+  .star-rating input[type="radio"]:checked ~ label,
+  .star-rating label:hover,
+  .star-rating label:hover ~ label {
+    color: #f5c518; /* золота зірка */
+  }
+
+  .review-box {
+    background-color: #202225;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    color: #dcddde;
+  }
+
+  .review-box strong {
+    color: #5865f2;
+  }
+</style>
+
+<div class="content-wrapper">
+  <main class="main-content">
+    <h2>Відгуки про групу: {{ group.name }}</h2>
+
+    {% if is_member %}
+      <form method="post">
+        {% csrf_token %}
+
+        {{ form.content }}
+
+        <div class="form-group">
+          <label for="id_rating">Оцініть групу:</label>
+          <div class="star-rating">
+            {% for i in "54321" %}
+              <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}">
+              <label for="star{{ i }}">★</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Надіслати відгук</button>
+      </form>
+      <hr>
+    {% else %}
+      <p><em>Тільки учасники групи можуть залишати відгуки.</em></p>
+    {% endif %}
+
+    <h3>Усі відгуки</h3>
+    <ul class="posts-list">
+      {% for review in reviews %}
+        <li class="review-box">
+          <strong>{{ review.author.username|escape }}</strong>:
+          {{ review.content|linebreaksbr|escape }}<br>
+          <small style="color:#72767d;">
+            ★ {{ review.rating }}/5 – {{ review.created_at|date:"d.m.Y H:i" }}
+          </small>
+        </li>
+      {% empty %}
+        <li>Відгуки відсутні.</li>
+      {% endfor %}
+    </ul>
+
+    <a href="{% url 'groups:group_detail' group.id %}" class="btn btn-secondary" style="margin-top: 20px;">
+      ← Назад до групи
+    </a>
+  </main>
+</div>
+{% endblock %}

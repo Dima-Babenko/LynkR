@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from .forms import GroupForm
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.db import models
-from .models import Group, GroupMembership, GroupPost
-from .forms import GroupForm, GroupPostForm
-from django.contrib.auth import get_user_model
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Group, GroupMembership, GroupPost, GroupReview
+from .forms import GroupPostForm, GroupReviewForm
 
 User = get_user_model()
 
@@ -19,12 +20,18 @@ def group_list(request):
     if request.user.is_authenticated:
         user_group_ids = set(request.user.groupmembership_set.values_list('group_id', flat=True))
 
+    # Підрахунок рейтингу для кожної групи — це повільно, тому краще використати annotate (оптимально)
+    from django.db.models import Avg
+
+    groups = groups.annotate(avg_rating=Avg('reviews__rating'))
+
     context = {
         'groups_joined': groups.filter(id__in=user_group_ids),
         'groups_not_joined': groups.exclude(id__in=user_group_ids),
         'q': q,
     }
     return render(request, 'groups/group_list.html', context)
+
 
 
 @login_required
@@ -44,26 +51,64 @@ def group_detail(request, group_id):
         )
     )
 
-    if request.method == 'POST' and not is_member:
-        if 'confirm' in request.POST:
-            GroupMembership.objects.create(user=request.user, group=group, role='member')
-            messages.success(request, "Ви приєдналися до групи!")
-            return redirect('groups:group_detail', group.id)
-        elif 'cancel' in request.POST:
-            messages.info(request, "Ви скасували вступ.")
-            return redirect('groups:group_list')
+    # Обробка POST заявки
+    if request.method == 'POST':
+        # Якщо користувач не учасник і натиснув підтвердження приєднання
+        if not is_member:
+            if 'confirm' in request.POST:
+                GroupMembership.objects.create(user=request.user, group=group, role='member')
+                messages.success(request, "Ви приєдналися до групи!")
+                return redirect('groups:group_detail', group.id)
+            elif 'cancel' in request.POST:
+                messages.info(request, "Ви скасували вступ.")
+                return redirect('groups:group_list')
+
+        # Якщо учасник - обробка додавання поста або відгуку
+        else:
+            # Додавання поста
+            if 'submit_post' in request.POST:
+                post_form = GroupPostForm(request.POST)
+                if post_form.is_valid():
+                    post = post_form.save(commit=False)
+                    post.group = group
+                    post.author = request.user
+                    post.save()
+                    messages.success(request, "Пост додано!")
+                    return redirect('groups:group_detail', group.id)
+            else:
+                post_form = GroupPostForm()
+
+            # Додавання відгуку
+            if 'submit_review' in request.POST:
+                review_form = GroupReviewForm(request.POST)
+                if review_form.is_valid():
+                    review = review_form.save(commit=False)
+                    review.group = group
+                    review.author = request.user
+                    review.save()
+                    messages.success(request, "Відгук додано!")
+                    return redirect('groups:group_detail', group.id)
+            else:
+                review_form = GroupReviewForm()
+    else:
+        post_form = GroupPostForm() if is_member else None
+        review_form = GroupReviewForm() if is_member else None
 
     posts = GroupPost.objects.filter(group=group).order_by('-created_at')
-    post_form = GroupPostForm() if is_member else None
+    reviews = GroupReview.objects.filter(group=group).select_related('author').order_by('-created_at')
 
-    return render(request, 'groups/group_detail.html', {
+    context = {
         'group': group,
         'is_member': is_member,
         'posts': posts,
         'post_form': post_form,
         'members': members,
         'membership': membership,
-    })
+        'reviews': reviews,
+        'review_form': review_form,
+    }
+
+    return render(request, 'groups/group_detail.html', context)
 
 
 @login_required
@@ -174,3 +219,29 @@ def change_member_role(request, group_id, user_id):
             messages.error(request, "Неприпустима роль.")
 
     return redirect('groups:group_detail', group.id)
+
+
+@login_required
+def group_reviews(request, group_id):
+    group = get_object_or_404(Group, id=group_id)
+    is_member = GroupMembership.objects.filter(user=request.user, group=group).exists()
+    reviews = GroupReview.objects.filter(group=group).select_related('author').order_by('-created_at')
+
+    if request.method == 'POST' and is_member:
+        form = GroupReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.group = group
+            review.author = request.user
+            review.save()
+            messages.success(request, "Відгук успішно додано!")
+            return redirect('groups:group_reviews', group_id)
+    else:
+        form = GroupReviewForm()
+
+    return render(request, 'groups/group_reviews.html', {
+        'group': group,
+        'reviews': reviews,
+        'form': form,
+        'is_member': is_member,
+    })

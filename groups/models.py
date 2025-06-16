@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from django.db.models import Avg
 
 User = get_user_model()
 
@@ -13,6 +15,10 @@ class Group(models.Model):
 
     def __str__(self):
         return self.name
+
+    def average_rating(self):
+        avg = self.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return round(avg or 0, 1)  # округлюємо до 1 знаку, якщо немає — 0
 
 class GroupMembership(models.Model):
     ROLE_CHOICES = (
@@ -41,3 +47,17 @@ class GroupPost(models.Model):
 
     def __str__(self):
         return f"Post by {self.author.username} in {self.group.name}"
+
+
+class GroupReview(models.Model):
+    group = models.ForeignKey('Group', on_delete=models.CASCADE, related_name='reviews')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='group_reviews')
+    rating = models.PositiveSmallIntegerField(default=5)
+    content = models.TextField('Відгук', max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review by {self.author} on {self.group}"

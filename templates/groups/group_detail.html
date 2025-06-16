@@ -220,6 +220,10 @@
     <h2>{{ group.name|escape }}</h2>
     <p>{{ group.description|linebreaksbr|escape }}</p>
 
+    <a href="{% url 'groups:group_reviews' group.id %}" class="btn btn-secondary" style="margin-top: 10px;">
+      Перейти до відгуків
+    </a>
+
     {% if is_member %}
       <form action="{% url 'groups:leave_group' group.id %}" method="post">
         {% csrf_token %}

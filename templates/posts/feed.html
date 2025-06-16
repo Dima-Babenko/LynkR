@@ -1,63 +1,175 @@
 {% extends 'base.html' %}
-
 {% block title %}Стрічка постів{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<style>
+  .discord-container {
+    background-color: #2f3136;
+    color: #dcddde;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
 
-    <h2>Стрічка постів</h2>
+  .discord-header {
+    color: #fff;
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+  }
 
-    <div class="card mt-3 text-start">
-        <div class="card-header">
-            Створити новий пост
-        </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Опублікувати</button>
-            </form>
-        </div>
+  .post-form {
+    background-color: #36393f;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 30px;
+  }
+
+  .post-form h5 {
+    color: #fff;
+    margin-bottom: 15px;
+  }
+
+  .discord-card {
+    background-color: #36393f;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+  }
+
+  .discord-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .discord-card-header .author {
+    font-weight: bold;
+    color: #fff;
+    margin-right: 10px;
+  }
+
+  .discord-card-header .date {
+    color: #72767d;
+    font-size: 0.85rem;
+  }
+
+  .discord-card-body {
+    margin-top: 10px;
+  }
+
+  .discord-card-body img {
+    border-radius: 6px;
+    max-width: 100%;
+    margin-top: 10px;
+  }
+
+  .discord-card-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .discord-btn {
+    border-radius: 5px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+
+  .btn-discord-primary {
+    background-color: #5865f2;
+    border: none;
+    color: #fff;
+  }
+
+  .btn-discord-outline {
+    border: 1px solid #72767d;
+    background-color: transparent;
+    color: #b9bbbe;
+  }
+
+  .btn-discord-danger {
+    background-color: #ed4245;
+    border: none;
+    color: #fff;
+  }
+
+  .btn-discord-primary:hover { background-color: #4752c4; }
+  .btn-discord-outline:hover { background-color: #4f545c; color: #fff; }
+  .btn-discord-danger:hover { background-color: #c53b3d; }
+
+  input, textarea {
+    background-color: #202225 !important;
+    border: 1px solid #72767d !important;
+    color: #dcddde !important;
+    border-radius: 5px !important;
+  }
+
+  input::placeholder, textarea::placeholder {
+    color: #72767d !important;
+  }
+</style>
+
+<div class="discord-container">
+  <h2 class="discord-header">Стрічка постів</h2>
+
+  <!-- Форма створення поста -->
+  <div class="post-form">
+    <h5>Створити новий пост</h5>
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="discord-btn btn-discord-primary">Опублікувати</button>
+    </form>
+  </div>
+
+  <!-- Список постів -->
+  {% for post in posts %}
+    <div class="discord-card">
+      <div class="discord-card-header">
+        <span class="author">{{ post.author.username }}</span>
+        <span class="date">{{ post.created_at|date:"d.m.Y H:i" }}</span>
+      </div>
+      <div class="discord-card-body">
+        <p>{{ post.content }}</p>
+        {% if post.image %}
+          <img src="{{ post.image.url }}" alt="Зображення поста">
+        {% endif %}
+      </div>
+
+      <div class="discord-card-actions">
+        <!-- Лайк -->
+        <form action="{% url 'posts:like_post' post.id %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="discord-btn btn-discord-outline">
+            Лайк ({{ post.likes.count }})
+          </button>
+        </form>
+
+        <!-- Редагування і видалення -->
+        {% if user == post.author or user.is_moderator or user.is_admin %}
+          <a href="{% url 'posts:edit_post' post.id %}" class="discord-btn btn-discord-outline">
+            Редагувати
+          </a>
+
+          <form action="{% url 'posts:delete_post' post.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="discord-btn btn-discord-danger" onclick="return confirm('Ви дійсно хочете видалити пост?');">
+              Видалити
+            </button>
+          </form>
+        {% endif %}
+      </div>
     </div>
-
-    <hr>
-
-    {% for post in posts %}
-    <div class="card my-3">
-        <div class="card-body">
-            <h5 class="card-title">
-                {{ post.author.username }}
-                <small class="text-muted">{{ post.created_at|date:"d.m.Y H:i" }}</small>
-            </h5>
-            <p class="card-text">{{ post.content }}</p>
-            {% if post.image %}
-                <img src="{{ post.image.url }}" class="img-fluid" alt="Зображення поста">
-            {% endif %}
-
-            <!-- Лайк -->
-            <form action="{% url 'posts:like_post' post.id %}" method="post" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-primary btn-sm">
-                    Лайк ({{ post.likes.count }})
-                </button>
-            </form>
-
-            <!-- Редагування і видалення: для автора, модератора і адміна -->
-            {% if user == post.author or user.is_moderator or user.is_admin %}
-                <a href="{% url 'posts:edit_post' post.id %}" class="btn btn-outline-secondary btn-sm ms-2">
-                    Редагувати
-                </a>
-
-                <form action="{% url 'posts:delete_post' post.id %}" method="post" class="d-inline ms-2">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm">Видалити</button>
-                </form>
-            {% endif %}
-        </div>
-    </div>
-    {% empty %}
-        <p>Пости відсутні.</p>
-    {% endfor %}
-
+  {% empty %}
+    <p>Пости відсутні.</p>
+  {% endfor %}
 </div>
 {% endblock %}
+

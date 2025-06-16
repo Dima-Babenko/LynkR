@@ -12,4 +12,6 @@ urlpatterns = [
     path('<int:group_id>/delete/', views.group_delete, name='group_delete'),
     path('<int:group_id>/post/', views.create_group_post, name='create_group_post'),
     path('<int:group_id>/change-member-role/<int:user_id>/', views.change_member_role, name='change_member_role'),
+    path('group/<int:group_id>/reviews/', views.group_reviews, name='group_reviews'),
+
 ]

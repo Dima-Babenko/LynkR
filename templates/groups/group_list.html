@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
+{% load star_rating %}
 {% block content %}
 
 <style>
-  /* Контейнер для Discord-стилю */
   .discord-content {
     background-color: #2f3136;
     color: #dcddde;
@@ -106,10 +106,16 @@
   .discord-content form.inline-form {
     display: inline;
   }
+
+  .group-rating {
+    margin-left: 12px;
+    font-weight: bold;
+    color: #ffcc00;
+    font-size: 0.95rem;
+  }
 </style>
 
 <div class="discord-content">
-
   <h2>Групи</h2>
   <a href="{% url 'groups:create_group' %}" class="btn btn-success mb-3">Створити групу</a>
 
@@ -127,6 +133,7 @@
       <li>
         <a href="{% url 'groups:group_detail' group.id %}">{{ group.name }}</a>
         <span class="text-muted">— {{ group.description }}</span>
+        <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
         <span class="text-muted">(ви учасник)</span>
 
         {% if request.user == group.owner %}
@@ -149,6 +156,7 @@
       <li>
         <a href="{% url 'groups:group_detail' group.id %}">{{ group.name }}</a>
         <span class="text-muted">— {{ group.description }}</span>
+        <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
         {% if request.user.is_authenticated %}
           <form action="{% url 'groups:join_group' group.id %}" method="post" class="inline-form" style="margin-left: 12px;">
             {% csrf_token %}
@@ -160,7 +168,6 @@
       <li>Немає доступних груп.</li>
     {% endfor %}
   </ul>
-
 </div>
 
 {% endblock %}
