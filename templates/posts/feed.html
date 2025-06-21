@@ -1,41 +1,28 @@
 {% extends 'base.html' %}
 {% block title %}Стрічка постів{% endblock %}
 
-{% block content %}
+{% block extra_head %}
 <style>
   .discord-container {
-    background-color: #2f3136;
-    color: #dcddde;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    padding: 30px;
-    border-radius: 10px;
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
+    padding: 20px 20px 100px; /* відступ знизу для форми */
   }
 
   .discord-header {
+    font-size: 26px;
+    margin-bottom: 20px;
+    font-weight: bold;
     color: #fff;
-    font-size: 1.8rem;
-    margin-bottom: 25px;
-  }
-
-  .post-form {
-    background-color: #36393f;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 30px;
-  }
-
-  .post-form h5 {
-    color: #fff;
-    margin-bottom: 15px;
   }
 
   .discord-card {
-    background-color: #36393f;
-    border-radius: 10px;
-    padding: 15px 20px;
+    background-color: #2b2d31;
+    padding: 15px;
+    border-radius: 8px;
     margin-bottom: 20px;
+    color: #dcddde;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   }
 
   .discord-card-header {
@@ -43,93 +30,162 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 10px;
-    flex-wrap: wrap;
-  }
-
-  .discord-card-header .author {
-    font-weight: bold;
-    color: #fff;
-    margin-right: 10px;
-  }
-
-  .discord-card-header .date {
-    color: #72767d;
-    font-size: 0.85rem;
-  }
-
-  .discord-card-body {
-    margin-top: 10px;
   }
 
   .discord-card-body img {
-    border-radius: 6px;
     max-width: 100%;
+    border-radius: 6px;
     margin-top: 10px;
   }
 
   .discord-card-actions {
-    margin-top: 15px;
     display: flex;
-    justify-content: flex-end;
     gap: 10px;
     flex-wrap: wrap;
+    margin-top: 15px;
   }
 
   .discord-btn {
-    border-radius: 5px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    padding: 6px 12px;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
   }
 
   .btn-discord-primary {
     background-color: #5865f2;
-    border: none;
-    color: #fff;
+    color: white;
+  }
+
+  .btn-discord-primary:hover {
+    background-color: #4752c4;
   }
 
   .btn-discord-outline {
-    border: 1px solid #72767d;
     background-color: transparent;
-    color: #b9bbbe;
+    border: 1px solid #72767d;
+    color: #dcddde;
+  }
+
+  .btn-discord-outline:hover {
+    background-color: #3c3f45;
   }
 
   .btn-discord-danger {
-    background-color: #ed4245;
+    background-color: #f04747;
+    color: white;
+  }
+
+  .btn-discord-danger:hover {
+    background-color: #d63c3c;
+  }
+
+  /* Форма внизу - обмежена ширина і позиціонування */
+  #chat-form-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 260px; /* ширина chat-sidebar */
+    right: 300px; /* ширина sidebar-right */
+    max-width: 800px;     /* обмежує ширину форми */
+    margin-left: auto;    /* щоб не виходила за межі контейнера */
+    margin-right: auto;
+    background-color: #2b2d31;
+    border-top: 1px solid #444;
+    padding: 10px 15px;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  #chat-form {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .file-label {
+    cursor: pointer;
+    font-size: 24px;
+    color: #72767d;
+    user-select: none;
+    transition: color 0.2s ease;
+  }
+
+  .file-label:hover {
+    color: #5865f2;
+  }
+
+  #file-upload {
+    display: none;
+  }
+
+  #message-text {
+    flex: 1;
+    min-height: 38px;
+    max-height: 80px;
+    padding: 8px 15px;
+    background-color: #1e1f22;
+    border: 1.5px solid #5865f2;
+    border-radius: 20px;
+    color: #dcddde;
+    font-size: 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  #message-text::placeholder {
+    color: #72767d;
+    font-style: italic;
+  }
+
+  #message-text:focus {
+    border-color: #4752c4;
+    background-color: #2b2d31;
+    box-shadow: 0 0 8px #5865f2;
+  }
+
+  #chat-form button {
+    background-color: #5865f2;
     border: none;
-    color: #fff;
+    color: white;
+    font-size: 22px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0;
   }
 
-  .btn-discord-primary:hover { background-color: #4752c4; }
-  .btn-discord-outline:hover { background-color: #4f545c; color: #fff; }
-  .btn-discord-danger:hover { background-color: #c53b3d; }
-
-  input, textarea {
-    background-color: #202225 !important;
-    border: 1px solid #72767d !important;
-    color: #dcddde !important;
-    border-radius: 5px !important;
+  #chat-form button:hover {
+    background-color: #4752c4;
   }
 
-  input::placeholder, textarea::placeholder {
-    color: #72767d !important;
+  @media (max-width: 900px) {
+    #chat-form-wrapper {
+      left: 10px;
+      right: 10px;
+      max-width: none;
+      border-radius: 8px 8px 0 0;
+    }
   }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="discord-container">
-  <h2 class="discord-header">Стрічка постів</h2>
+  <h2 class="discord-header">📄 Стрічка постів</h2>
 
-  <!-- Форма створення поста -->
-  <div class="post-form">
-    <h5>Створити новий пост</h5>
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="discord-btn btn-discord-primary">Опублікувати</button>
-    </form>
-  </div>
-
-  <!-- Список постів -->
   {% for post in posts %}
     <div class="discord-card">
       <div class="discord-card-header">
@@ -142,34 +198,35 @@
           <img src="{{ post.image.url }}" alt="Зображення поста">
         {% endif %}
       </div>
-
       <div class="discord-card-actions">
-        <!-- Лайк -->
         <form action="{% url 'posts:like_post' post.id %}" method="post">
           {% csrf_token %}
           <button type="submit" class="discord-btn btn-discord-outline">
-            Лайк ({{ post.likes.count }})
+            ❤️ Лайк ({{ post.likes.count }})
           </button>
         </form>
 
-        <!-- Редагування і видалення -->
         {% if user == post.author or user.is_moderator or user.is_admin %}
-          <a href="{% url 'posts:edit_post' post.id %}" class="discord-btn btn-discord-outline">
-            Редагувати
-          </a>
-
-          <form action="{% url 'posts:delete_post' post.id %}" method="post">
+          <a href="{% url 'posts:edit_post' post.id %}" class="discord-btn btn-discord-outline">✏️ Редагувати</a>
+          <form action="{% url 'posts:delete_post' post.id %}" method="post" onsubmit="return confirm('Ви дійсно хочете видалити пост?');">
             {% csrf_token %}
-            <button type="submit" class="discord-btn btn-discord-danger" onclick="return confirm('Ви дійсно хочете видалити пост?');">
-              Видалити
-            </button>
+            <button type="submit" class="discord-btn btn-discord-danger">🗑️ Видалити</button>
           </form>
         {% endif %}
       </div>
     </div>
   {% empty %}
-    <p>Пости відсутні.</p>
+    <p style="color: #999;">Пости відсутні.</p>
   {% endfor %}
 </div>
-{% endblock %}
 
+<div id="chat-form-wrapper">
+  <form method="post" enctype="multipart/form-data" id="chat-form">
+    {% csrf_token %}
+    <label for="file-upload" class="file-label" title="Прикріпити файл">📎</label>
+    <input type="file" name="image" id="file-upload">
+    <textarea name="content" id="message-text" placeholder="Напиши щось...">{% if form.content.value %}{{ form.content.value }}{% endif %}</textarea>
+    <button type="submit">➤</button>
+  </form>
+</div>
+{% endblock %}

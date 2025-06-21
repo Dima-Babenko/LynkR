@@ -1,244 +1,223 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Мій сайт{% endblock %}</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}LynkR{% endblock %}</title>
+  <style>
+    body, html {
+      margin: 0;
+      height: 100%;
+      background-color: #313338;
+      font-family: "Segoe UI", sans-serif;
+      color: #dcddde;
+      overflow: hidden; /* Вимикаємо прокрутку сторінки */
+    }
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    .layout-container {
+      display: flex;
+      height: 100vh;
+    }
 
-    <!-- Discord-like dark theme styles -->
-    <style>
-        /* Фон сторінки */
-        body {
-            background-color: #36393f;
-            color: #dcddde;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        }
+    .sidebar-left {
+      width: 72px;
+      background-color: #1e1f22;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      gap: 20px;
+    }
 
-        /* Навбар */
-        nav.navbar {
-            background-color: #2f3136 !important;
-            box-shadow: none !important;
-            border-bottom: 1px solid #202225;
-        }
+    .sidebar-left a {
+      text-decoration: none;
+      color: #b9bbbe;
+      font-size: 24px;
+    }
 
-        nav.navbar .navbar-brand {
-            color: #fff;
-            font-weight: 700;
-            font-size: 1.4rem;
-            letter-spacing: 1px;
-        }
+    .sidebar-left a:hover {
+      color: #fff;
+    }
 
-        nav.navbar .navbar-brand:hover {
-            color: #7289da;
-            text-decoration: none;
-        }
+    .chat-sidebar {
+      width: 260px;
+      background-color: #2b2d31;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      height: 100vh;
+      box-sizing: border-box;
+    }
 
-        /* Кнопка бургер меню */
-        .navbar-toggler {
-            border: none;
-            filter: brightness(0.8);
-        }
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(255,255,255,0.7)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
-        }
+    .chat-sidebar h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #fff;
+      flex-shrink: 0;
+    }
 
-        /* Посилання у навбарі */
-        .navbar-nav .nav-link {
-            color: #b9bbbe;
-            font-weight: 500;
-            transition: color 0.2s ease-in-out;
-        }
-        .navbar-nav .nav-link:hover,
-        .navbar-nav .nav-link.active {
-            color: #fff;
-            text-decoration: none;
-        }
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-grow: 1;
+      overflow-y: auto;
+      margin-bottom: 14px;
+    }
 
-        /* Червоні посилання (Вихід) */
-        .navbar-nav .nav-link.text-danger {
-            color: #f04747 !important;
-            font-weight: 600;
-        }
-        .navbar-nav .nav-link.text-danger:hover {
-            color: #ff6b6b !important;
-        }
+    .chat-item {
+      background-color: #383a40;
+      padding: 8px 12px;
+      border-radius: 5px;
+      color: #dcddde;
+      text-decoration: none;
+    }
 
-        /* Контейнер основного вмісту */
-        .container {
-            max-width: 960px;
-        }
+    .chat-item:hover {
+      background-color: #4e5058;
+    }
 
-        /* Заголовки */
-        h2, h3 {
-            color: #fff;
-            font-weight: 600;
-        }
+    .profile-summary {
+      border-top: 1px solid #444;
+      padding-top: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
 
-        /* Форми */
-        input.form-control {
-            background-color: #202225;
-            border: 1px solid #40444b;
-            color: #dcddde;
-            border-radius: 4px;
-            transition: border-color 0.2s ease-in-out;
-        }
-        input.form-control:focus {
-            background-color: #2f3136;
-            border-color: #7289da;
-            color: #fff;
-            outline: none;
-            box-shadow: 0 0 5px #7289da;
-        }
+    .profile-summary img {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      object-fit: cover;
+      background-color: #555;
+      flex-shrink: 0;
+    }
 
-        /* Кнопки */
-        .btn-primary {
-            background-color: #5865f2;
-            border-color: #5865f2;
-            font-weight: 600;
-            transition: background-color 0.2s ease-in-out;
-        }
-        .btn-primary:hover, .btn-primary:focus {
-            background-color: #4752c4;
-            border-color: #4752c4;
-            box-shadow: 0 0 8px #4752c4;
-            color: #fff;
-        }
+    .profile-summary .info {
+      flex-grow: 1;
+      overflow: hidden;
+    }
 
-        .btn-success {
-            background-color: #43b581;
-            border-color: #43b581;
-        }
-        .btn-success:hover {
-            background-color: #399870;
-            border-color: #399870;
-        }
+    .profile-summary .info .username {
+      font-weight: 700;
+      font-size: 1.1em;
+      color: #faa61a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        .btn-outline-success {
-            color: #43b581;
-            border-color: #43b581;
-        }
-        .btn-outline-success:hover {
-            background-color: #43b581;
-            color: #fff;
-            border-color: #43b581;
-        }
+    .profile-summary .info .role {
+      font-size: 0.9em;
+      color: #999;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        .btn-danger {
-            background-color: #f04747;
-            border-color: #f04747;
-        }
-        .btn-danger:hover {
-            background-color: #d83c3c;
-            border-color: #d83c3c;
-        }
+    .profile-summary a.edit-link {
+      color: #7289da;
+      font-size: 0.9em;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
 
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.8rem;
-        }
+    .profile-summary a.edit-link:hover {
+      text-decoration: underline;
+    }
 
-        /* Списки груп */
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      background-color: #313338;
+    }
 
-        ul li {
-            padding: 10px 15px;
-            background-color: #2f3136;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            transition: background-color 0.15s ease-in-out;
-        }
-        ul li:hover {
-            background-color: #40444b;
-        }
-        ul li a {
-            color: #b9bbbe;
-            font-weight: 600;
-            text-decoration: none;
-        }
-        ul li a:hover {
-            color: #fff;
-            text-decoration: underline;
-        }
-        ul li span.text-muted {
-            color: #72767d;
-            font-weight: 400;
-            font-style: italic;
-            margin-left: 10px;
-        }
-    </style>
-
-    {% block extra_head %}{% endblock %}
+    .sidebar-right {
+      width: 300px;
+      background-color: #2b2d31;
+      padding: 20px;
+      overflow-y: auto;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
+  <div class="layout-container">
+    <aside class="sidebar-left">
+      {% if user.is_authenticated %}
+        <a href="{% url 'home' %}" title="Головна">🏠</a>
+        <a href="{% url 'posts:feed' %}" title="Пости">📄</a>
+        <a href="{% url 'chat:chat_list' %}" title="Чати">💬</a>
+        <a href="{% url 'groups:group_list' %}" title="Групи">👥</a>
+        <a href="{% url 'friends' %}" title="Друзі">👤</a>
+        <a href="{% url 'notification_list' %}" title="Сповіщення">🔔</a>
+        <a href="{% url 'profile' %}" title="Профіль">⚙️</a>
+        <a href="{% url 'logout' %}" title="Вихід" style="color: #f04747;">🚪</a>
+      {% else %}
+        <a href="{% url 'login' %}" title="Вхід">🔐</a>
+        <a href="{% url 'register' %}" title="Реєстрація">📝</a>
+      {% endif %}
+    </aside>
 
-<!-- Навігаційне меню -->
-<nav class="navbar navbar-expand-lg">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="{% url 'home' %}">Соціальна мережа</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'posts:feed' %}">📄 Пости</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'chat:chat_list' %}">💬 Чати</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' %}">👤 Профіль</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'friends' %}">👥 Друзі</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'groups:group_list' %}">👥 Групи</a>
-                    </li>
-                    <li class="nav-item position-relative">
-                        <a class="nav-link" href="{% url 'notification_list' %}">
-                            🔔 Сповіщення
-                            {% if unread_notifications_count > 0 %}
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                    {{ unread_notifications_count }}
-                                    <span class="visually-hidden">непрочитані</span>
-                                </span>
-                            {% endif %}
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-danger" href="{% url 'logout' %}">🚪 Вихід</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">🔐 Вхід</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'register' %}">📝 Реєстрація</a>
-                    </li>
-                {% endif %}
-            </ul>
+    <aside class="chat-sidebar">
+      <h3>Чати</h3>
+      <div class="chat-list">
+        {% if user.is_authenticated %}
+          {% for chat in user.chats.all %}
+            <a href="{% url 'chat:chat_detail' chat.id %}" class="chat-item">
+              {% if chat.is_group %}
+                {{ chat.name }}
+              {% else %}
+                {% for participant in chat.participants.all %}
+                  {% if participant != user %}{{ participant.username }}{% endif %}
+                {% endfor %}
+              {% endif %}
+            </a>
+          {% empty %}
+            <span style="color: #888">Немає чатів</span>
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      {% if user.is_authenticated %}
+        <div class="profile-summary">
+          {% if user.avatar %}
+            <img src="{{ user.avatar.url }}" alt="Аватар користувача">
+          {% else %}
+            <img src="{% static 'default_avatar.png' %}" alt="Аватар за замовчуванням">
+          {% endif %}
+          <div class="info">
+            <div class="username">{{ user.username }}</div>
+            <div class="role">{{ user.get_role_display }}</div>
+          </div>
+          <a href="{% url 'edit_profile' %}" class="edit-link">Редагувати</a>
         </div>
-    </div>
-</nav>
+      {% endif %}
+    </aside>
 
-<!-- Основний вміст -->
-<div class="container mt-4">
-    {% block content %}{% endblock %}
-    {% if request.resolver_match.url_name == 'home' and user.is_authenticated %}
-        <div class="text-center mt-5"></div>
-    {% endif %}
-</div>
+    <main class="main-content">
+      {% block content %}{% endblock %}
+    </main>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-{% block extra_js %}{% endblock %}
+    <aside class="sidebar-right">
+      {% block sidebar %}
+        {% if user.is_authenticated %}
+          <h4>Активний зараз</h4>
+          <p style="color: #999; font-size: 14px;">
+            Зараз тут тихо...<br />
+            Коли твій друг почне активну діяльність — наприклад, гра або голосовий чат — ми покажемо це тут!
+          </p>
+        {% endif %}
+      {% endblock %}
+    </aside>
+  </div>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
