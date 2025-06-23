@@ -36,7 +36,7 @@ class GroupForm(forms.ModelForm):
 class GroupPostForm(forms.ModelForm):
     class Meta:
         model = GroupPost
-        fields = ['content']
+        fields = ['content',  'file']
         widgets = {
             'content': forms.Textarea(attrs={'rows': 2, 'placeholder': 'Напишіть щось...'}),
         }

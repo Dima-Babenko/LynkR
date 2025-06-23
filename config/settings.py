@@ -27,7 +27,7 @@ INSTALLED_APPS = [
     'groups',
     'notifications',
 
-    'channels',
+    'channels',  # Django Channels
 ]
 
 MIDDLEWARE = [
@@ -60,7 +60,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+# ✅ Використовуємо ASGI (для WebSocket)
+ASGI_APPLICATION = 'config.asgi.application'
 
 # Database
 DATABASES = {
@@ -88,9 +89,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'uk'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
 USE_TZ = True
 
@@ -117,11 +116,9 @@ LOGOUT_REDIRECT_URL = 'home'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-ASGI_APPLICATION = 'yourproject.asgi.application'
-
-
+# ✅ Channels layer — для WebSocket (пам’ять, не Redis)
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }

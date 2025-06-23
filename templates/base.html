@@ -157,7 +157,26 @@
         <a href="{% url 'chat:chat_list' %}" title="Чати">💬</a>
         <a href="{% url 'groups:group_list' %}" title="Групи">👥</a>
         <a href="{% url 'friends' %}" title="Друзі">👤</a>
-        <a href="{% url 'notification_list' %}" title="Сповіщення">🔔</a>
+        <a href="{% url 'notification_list' %}" title="Сповіщення" style="position: relative;">
+          🔔
+          {% if unread_notifications_count > 0 %}
+            <span style="
+              position: absolute;
+              top: -6px;
+              right: -10px;
+              background-color: #f04747;
+              color: white;
+              font-size: 11px;
+              font-weight: bold;
+              padding: 2px 6px;
+              border-radius: 12px;
+              line-height: 1;
+            ">
+              {{ unread_notifications_count }}
+            </span>
+          {% endif %}
+        </a>
+
         <a href="{% url 'profile' %}" title="Профіль">⚙️</a>
         <a href="{% url 'logout' %}" title="Вихід" style="color: #f04747;">🚪</a>
       {% else %}

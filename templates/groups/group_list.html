@@ -1,233 +1,224 @@
 {% extends 'base.html' %}
 {% load star_rating %}
-{% block content %}
 
+{% block title %}Групи{% endblock %}
+
+{% block extra_head %}
 <style>
-  .discord-content {
-    background-color: #2f3136;
-    color: #dcddde;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    padding: 20px 25px;
-    border-radius: 12px;
+  .groups-container {
     max-width: 900px;
     margin: 30px auto;
+    padding: 20px 25px;
+    background-color: #2f3136;
+    color: #dcddde;
+    border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   }
 
-  .discord-content h2, .discord-content h3 {
+  .groups-container h2, .groups-container h3 {
     color: #fff;
-    font-weight: 700;
     margin-bottom: 16px;
+    font-weight: 700;
   }
 
-  .discord-content a {
-    color: #00b0f4;
+  .group-card {
+    background-color: #36393f;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
+    transition: background-color 0.2s ease;
+  }
+
+  .group-card:hover {
+    background-color: #40444b;
+  }
+
+  .group-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #b9bbbe;
     text-decoration: none;
-    font-weight: 600;
-    transition: color 0.25s ease;
-  }
-  .discord-content a:hover {
-    text-decoration: underline;
-    color: #0091d5;
   }
 
-  .discord-content .btn {
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    padding: 6px 14px;
-    transition: background-color 0.25s ease;
+  .group-title:hover {
+    color: #fff;
+    text-decoration: underline;
+  }
+
+  .group-desc {
+    font-size: 14px;
+    color: #999;
+  }
+
+  .group-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .group-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .group-rating {
+    font-weight: 700;
+    color: #ffcc00;
     user-select: none;
   }
 
-  .discord-content .btn-success {
-    background-color: #43b581;
-    border: none;
-    color: #fff;
-  }
-  .discord-content .btn-success:hover {
-    background-color: #3a9d74;
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
-  .discord-content .btn-primary {
-    background-color: #5865f2;
+  .btn {
     border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-primary {
+    background-color: #5865f2;
     color: #fff;
   }
-  .discord-content .btn-primary:hover {
+
+  .btn-primary:hover {
     background-color: #4752c4;
   }
 
-  .discord-content .btn-secondary {
-    background-color: #2f3136;
-    border: none;
-    color: #b9bbbe;
-  }
-  .discord-content .btn-secondary:hover {
-    background-color: #232428;
-  }
-
-  .discord-content .btn-outline-success {
-    color: #43b581;
-    border: 1.5px solid #43b581;
-    background-color: transparent;
-  }
-  .discord-content .btn-outline-success:hover {
+  .btn-success {
     background-color: #43b581;
     color: #fff;
   }
 
-  .discord-content input.form-control {
+  .btn-success:hover {
+    background-color: #3a9d74;
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    border: 1.5px solid #43b581;
+    color: #43b581;
+  }
+
+  .btn-outline:hover {
+    background-color: #43b581;
+    color: #fff;
+  }
+
+  .btn-danger {
+    background-color: #ed4245;
+    color: #fff;
+  }
+
+  .btn-danger:hover {
+    background-color: #b93a3f;
+  }
+
+  .search-form {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+
+  .search-form input {
     background-color: #202225;
     border: 1px solid #72767d;
     color: #dcddde;
     border-radius: 6px;
     padding: 8px 12px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
-  .discord-content input.form-control::placeholder {
-    color: #72767d;
-  }
-  .discord-content input.form-control:focus {
-    outline: none;
-    border-color: #5865f2;
-    box-shadow: 0 0 6px #5865f2;
-  }
-
-  /* Списки */
-  .discord-content ul {
-    list-style: none;
-    padding-left: 0;
-    margin-bottom: 36px;
-  }
-
-  .discord-content li {
-    background-color: #36393f;
-    padding: 12px 18px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    box-shadow: inset 0 1px 2px rgba(255,255,255,0.05);
-    transition: background-color 0.25s ease;
-  }
-  .discord-content li:hover {
-    background-color: #40444b;
-  }
-
-  .discord-content li a {
+    font-size: 15px;
     flex-grow: 1;
-    font-weight: 700;
-    color: #b9bbbe;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .discord-content li a:hover {
-    color: #fff;
   }
 
-  .discord-content .text-muted {
+  .search-form input::placeholder {
     color: #72767d;
-    font-size: 0.9rem;
-    white-space: nowrap;
   }
 
-  /* Відступ між елементами управління */
-  .inline-form {
-    display: inline-flex;
-    align-items: center;
-    margin-left: 10px;
-  }
-
-  /* Кнопки видалення */
-  .btn-danger {
-    background-color: #ed4245;
-    border: none;
-    padding: 5px 12px;
-    font-size: 0.85rem;
-    border-radius: 6px;
-    transition: background-color 0.25s ease;
-  }
-  .btn-danger:hover {
-    background-color: #b93a3f;
-  }
-
-  /* Рейтинг груп */
-  .group-rating {
-    margin-left: 12px;
-    font-weight: 700;
-    color: #ffcc00;
-    font-size: 1rem;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  /* Форми пошуку */
-  form.mb-3 {
-    display: flex;
-    gap: 10px;
-    max-width: 380px;
-    margin-bottom: 28px;
+  @media (max-width: 600px) {
+    .group-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>
+{% endblock %}
 
-<div class="discord-content">
+{% block content %}
+<div class="groups-container">
   <h2>Групи</h2>
-  <a href="{% url 'groups:create_group' %}" class="btn btn-success mb-3">Створити групу</a>
 
-  <form method="get" class="mb-3" action="{% url 'groups:group_list' %}">
-    <input type="text" name="q" placeholder="Пошук груп..." value="{{ q }}" class="form-control" autocomplete="off" />
-    <button type="submit" class="btn btn-primary">Пошук</button>
+  <a href="{% url 'groups:create_group' %}" class="btn btn-success">➕ Створити групу</a>
+
+  <form method="get" action="{% url 'groups:group_list' %}" class="search-form">
+    <input type="text" name="q" placeholder="Пошук груп..." value="{{ q }}" autocomplete="off" />
+    <button type="submit" class="btn btn-primary">🔍</button>
     {% if q %}
-      <a href="{% url 'groups:group_list' %}" class="btn btn-secondary">Скинути</a>
+      <a href="{% url 'groups:group_list' %}" class="btn btn-outline">Скинути</a>
     {% endif %}
   </form>
 
   <h3>Ваші групи</h3>
-  <ul>
-    {% for group in groups_joined %}
-      <li>
-        <a href="{% url 'groups:group_detail' group.id %}" title="{{ group.name }}">{{ group.name }}</a>
-        <span class="text-muted" title="{{ group.description }}">— {{ group.description|truncatechars:40 }}</span>
-        <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
-        <span class="text-muted" style="white-space: nowrap;">(ви учасник)</span>
+  {% for group in groups_joined %}
+    <div class="group-card">
+      <a href="{% url 'groups:group_detail' group.id %}" class="group-title">{{ group.name }}</a>
+      <div class="group-desc">{{ group.description|truncatechars:80 }}</div>
 
-        {% if request.user == group.owner %}
-          <form action="{% url 'groups:group_delete' group.id %}" method="post" class="inline-form">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger" onclick="return confirm('Ви дійсно хочете видалити групу?');">
-              Видалити
-            </button>
-          </form>
-        {% endif %}
-      </li>
-    {% empty %}
-      <li>Ви не є учасником жодної групи.</li>
-    {% endfor %}
-  </ul>
+      <div class="group-footer">
+        <div class="group-meta">
+          <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
+          <span style="color: #aaa;">(ви учасник)</span>
+        </div>
+        <div class="btn-group">
+          {% if request.user == group.owner %}
+            <form method="post" action="{% url 'groups:group_delete' group.id %}" onsubmit="return confirm('Видалити групу?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Видалити</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>Ви не приєднані до жодної групи.</p>
+  {% endfor %}
 
   <h3>Інші групи</h3>
-  <ul>
-    {% for group in groups_not_joined %}
-      <li>
-        <a href="{% url 'groups:group_detail' group.id %}" title="{{ group.name }}">{{ group.name }}</a>
-        <span class="text-muted" title="{{ group.description }}">— {{ group.description|truncatechars:40 }}</span>
-        <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
+  {% for group in groups_not_joined %}
+    <div class="group-card">
+      <a href="{% url 'groups:group_detail' group.id %}" class="group-title">{{ group.name }}</a>
+      <div class="group-desc">{{ group.description|truncatechars:80 }}</div>
+
+      <div class="group-footer">
+        <div class="group-meta">
+          <span class="group-rating">{% star_rating group.avg_rating|default:0 %}</span>
+        </div>
         {% if request.user.is_authenticated %}
-          <form action="{% url 'groups:join_group' group.id %}" method="post" class="inline-form">
+          <form method="post" action="{% url 'groups:join_group' group.id %}">
             {% csrf_token %}
-            <button class="btn btn-outline-success">Приєднатися</button>
+            <button type="submit" class="btn btn-outline">Приєднатися</button>
           </form>
         {% endif %}
-      </li>
-    {% empty %}
-      <li>Немає доступних груп.</li>
-    {% endfor %}
-  </ul>
+      </div>
+    </div>
+  {% empty %}
+    <p>Немає доступних груп.</p>
+  {% endfor %}
 </div>
-
 {% endblock %}

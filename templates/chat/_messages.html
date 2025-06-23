@@ -1,74 +1,174 @@
+{% load static %}
+
 <style>
-  .discord-message {
-    background-color: #36393f;
+  /* Основне для прокрутки */
+  .message-container {
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden; /* прибирає нижній повзунок */
+    padding-right: 6px;
+  }
+
+  /* Стилізація вертикального повзунка для WebKit-браузерів */
+  .message-container::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .message-container::-webkit-scrollbar-track {
+    background: #2b2d31;
+  }
+
+  .message-container::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 4px;
+  }
+
+  .message-container::-webkit-scrollbar-thumb:hover {
+    background-color: #5865f2;
+  }
+
+  /* Для Firefox */
+  .message-container {
+    scrollbar-width: thin;
+    scrollbar-color: #444 #2b2d31;
+  }
+
+  /* Весь блок повідомлень */
+  .message {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-family: 'Roboto', sans-serif;
+    align-items: flex-start;
+  }
+
+  .message .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    background-color: #7289da;
+  }
+
+  .message .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .message .content {
+    background: none;
+    max-width: 80%;
     color: #dcddde;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    word-break: break-word;
   }
-  .discord-message strong {
-    color: #fff;
+
+  .message .username {
     font-weight: 600;
+    color: #faa61a;
+    font-size: 14px;
+    margin-bottom: 2px;
   }
-  .discord-message p {
-    margin: 6px 0;
+
+  .message .text {
+    font-size: 15px;
+    line-height: 1.5;
     white-space: pre-wrap;
+    margin-top: 5px;
   }
-  .discord-message img,
-  .discord-message video,
-  .discord-message audio {
-    margin-top: 8px;
-    border-radius: 6px;
-    max-width: 100%;
-    height: auto;
-    display: block;
-  }
-  .discord-message small {
-    display: block;
-    margin-top: 8px;
+
+  .message .timestamp {
+    font-size: 12px;
     color: #72767d;
-    font-size: 0.75rem;
+    margin-left: 6px;
   }
-  a.discord-attachment-link {
-    color: #00aff4;
+
+  .message .attachment {
+    margin-top: 6px;
+  }
+
+  .message.self {
+    flex-direction: row-reverse;
+  }
+
+  .message.self .username {
+    color: #57f287;
+  }
+
+  .message.self .content {
+    text-align: right;
+  }
+
+  .attachment img,
+  .attachment video {
+    max-width: 400px;
+    border-radius: 8px;
+    margin-top: 5px;
+  }
+
+  .attachment audio {
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  .discord-attachment-link {
+    display: inline-block;
+    color: #00b0f4;
     text-decoration: none;
-    font-weight: 600;
+    margin-top: 5px;
   }
-  a.discord-attachment-link:hover {
+
+  .discord-attachment-link:hover {
     text-decoration: underline;
   }
 </style>
 
+
 {% for message in messages %}
-  <div class="discord-message" role="article" aria-label="Повідомлення від {{ message.sender.username }}">
-    <p><strong>{{ message.sender.username }}:</strong></p>
-    <p>{{ message.text|linebreaksbr }}</p>
+  <div class="message {% if message.sender == user %}self{% endif %}">
+    <div class="avatar">
+      {% if message.sender.avatar %}
+        <img src="{{ message.sender.avatar.url }}" alt="{{ message.sender.username }}">
+      {% else %}
+        <img src="{% static 'img/default_avatar.png' %}" alt="Default avatar">
+      {% endif %}
+    </div>
 
-    {% if message.file %}
-      {% with message.file.name|lower as filename %}
-        {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
-          <img src="{{ message.file.url }}" alt="Зображення від {{ message.sender.username }}">
-        {% elif ".mp3" in filename %}
-          <audio controls>
-            <source src="{{ message.file.url }}" type="audio/mpeg">
-            Ваш браузер не підтримує аудіо.
-          </audio>
-        {% elif ".mp4" in filename %}
-          <video controls>
-            <source src="{{ message.file.url }}" type="video/mp4">
-            Ваш браузер не підтримує відео.
-          </video>
-        {% else %}
-          <p><a href="{{ message.file.url }}" target="_blank" rel="noopener noreferrer" class="discord-attachment-link">📎 Завантажити файл</a></p>
-        {% endif %}
-      {% endwith %}
-    {% endif %}
+    <div class="content">
+      <div class="username">
+        {{ message.sender.username }}
+        <span class="timestamp">{{ message.timestamp|date:"d.m.Y H:i" }}</span>
+      </div>
 
-    <small>{{ message.timestamp|date:"d.m.Y H:i" }}</small>
+      {% if message.text %}
+        <div class="text">{{ message.text|linebreaksbr }}</div>
+      {% endif %}
+
+      {% if message.file %}
+        <div class="attachment">
+          {% with message.file.name|lower as filename %}
+            {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
+              <img src="{{ message.file.url }}" alt="Зображення">
+            {% elif ".mp3" in filename %}
+              <audio controls>
+                <source src="{{ message.file.url }}" type="audio/mpeg">
+                Ваш браузер не підтримує аудіо.
+              </audio>
+            {% elif ".mp4" in filename %}
+              <video controls>
+                <source src="{{ message.file.url }}" type="video/mp4">
+                Ваш браузер не підтримує відео.
+              </video>
+            {% else %}
+              <a href="{{ message.file.url }}" class="discord-attachment-link" target="_blank">📎 Завантажити файл</a>
+            {% endif %}
+          {% endwith %}
+        </div>
+      {% endif %}
+    </div>
   </div>
 {% empty %}
-  <p style="color:#72767d; font-style: italic;">Немає повідомлень.</p>
+  <p style="color: #72767d; font-style: italic;">Немає повідомлень.</p>
 {% endfor %}
+
+

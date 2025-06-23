@@ -11,19 +11,46 @@
     list-style: none;
   }
 
+  /* Контейнер для відокремлення нових і прочитаних */
+  .notifications-list .new-section {
+    margin-bottom: 30px;
+  }
+
+  /* Заголовок для нових сповіщень */
+  .notifications-list .new-section h3 {
+    color: #5865f2;
+    margin-bottom: 15px;
+    font-weight: 600;
+    border-bottom: 2px solid #5865f2;
+    padding-bottom: 5px;
+  }
+
+  /* Стиль для нових (непрочитаних) */
+  .notifications-list li.unread {
+    background-color: #3b3d43;
+    border-left: 4px solid #5865f2;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* Стиль для прочитаних */
+  .notifications-list li.read {
+    background-color: #222326;
+    border-left: 4px solid transparent;
+    color: #aaa;
+    font-weight: normal;
+    border-top: 1px solid #444;
+    padding-top: 18px;
+    margin-top: 8px;
+  }
+
+  /* Загальний стиль сповіщення */
   .notifications-list li {
-    background-color: #2b2d31;
     border: 1px solid #3c3f45;
     border-radius: 8px;
     padding: 15px 20px;
     margin-bottom: 12px;
-    color: #dcddde;
     transition: background-color 0.2s ease;
-  }
-
-  .notifications-list li.unread {
-    background-color: #3b3d43;
-    border-left: 4px solid #5865f2;
   }
 
   .notification-message {
@@ -61,15 +88,29 @@
 
 <h2>🔔 Сповіщення</h2>
 
-<ul class="notifications-list">
-  {% for n in notifications %}
-    <li class="{% if not n.is_read %}unread{% endif %}">
-      <div class="notification-message">{{ n.message|linebreaksbr }}</div>
-      <div class="notification-date">{{ n.created_at|date:"d.m.Y H:i" }}</div>
-    </li>
-  {% empty %}
-    <li style="text-align: center; color: #777;">Немає сповіщень</li>
+{% with notifications|dictsortreversed:"created_at" as sorted_notifications %}
+  {% regroup sorted_notifications by is_read as grouped_notifications %}
+
+  {% for group in grouped_notifications %}
+    <div class="notifications-list new-section">
+      {% if not group.grouper %}
+        <h3>Нові сповіщення</h3>
+      {% else %}
+        <h3>Прочитані сповіщення</h3>
+      {% endif %}
+
+      <ul>
+        {% for n in group.list %}
+          <li class="{% if not n.is_read %}unread{% else %}read{% endif %}">
+            <div class="notification-message">{{ n.message|linebreaksbr }}</div>
+            <div class="notification-date">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+          </li>
+        {% empty %}
+          <li style="text-align: center; color: #777;">Немає сповіщень</li>
+        {% endfor %}
+      </ul>
+    </div>
   {% endfor %}
-</ul>
+{% endwith %}
 
 {% endblock %}

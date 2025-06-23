@@ -179,7 +179,7 @@ def create_group_post(request, group_id):
         return redirect('groups:group_detail', group.id)
 
     if request.method == 'POST':
-        form = GroupPostForm(request.POST)
+        form = GroupPostForm(request.POST, request.FILES)
         if form.is_valid():
             post = form.save(commit=False)
             post.group = group
@@ -191,6 +191,7 @@ def create_group_post(request, group_id):
         form = GroupPostForm()
 
     return render(request, 'groups/create_post.html', {'form': form, 'group': group})
+
 
 
 @login_required

@@ -43,6 +43,7 @@ class GroupPost(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='posts')
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
+    file = models.FileField(upload_to='group_posts/', blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

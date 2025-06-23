@@ -7,6 +7,7 @@ from .forms import MessageForm, GroupChatForm
 from django.http import JsonResponse
 from django.utils.timezone import now, timedelta
 from django.template.loader import render_to_string
+from notifications.models import Notification
 
 User = get_user_model()
 
@@ -34,6 +35,15 @@ def chat_detail(request, chat_id):
         message.chat = chat
         message.sender = request.user
         message.save()
+
+        # 📢 Створюємо сповіщення для іншого користувача
+        # if other_user:
+        #     Notification.objects.create(
+        #         user=other_user,
+        #         notification_type='message',
+        #         message=f"{request.user.username} надіслав вам повідомлення."
+        #     )
+
         return redirect('chat:chat_detail', chat_id=chat.id)
 
     return render(request, 'chat/chat_detail.html', {
@@ -42,6 +52,7 @@ def chat_detail(request, chat_id):
         'form': form,
         'other_user': other_user,
         'is_online': is_online,
+        'room_name': f'chat_{chat.id}',
     })
 
 @login_required

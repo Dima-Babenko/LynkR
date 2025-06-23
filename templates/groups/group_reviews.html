@@ -3,11 +3,27 @@
 
 {% block content %}
 <style>
+  .reviews-wrapper {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #2f3136;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    color: #dcddde;
+  }
+
+  .reviews-wrapper h2,
+  .reviews-wrapper h3 {
+    color: #fff;
+    margin-bottom: 20px;
+  }
+
   .star-rating {
     direction: rtl;
     display: inline-flex;
     gap: 5px;
-    font-size: 1.5em;
+    font-size: 1.8em;
     justify-content: flex-start;
   }
 
@@ -24,67 +40,116 @@
   .star-rating input[type="radio"]:checked ~ label,
   .star-rating label:hover,
   .star-rating label:hover ~ label {
-    color: #f5c518; /* золота зірка */
+    color: #f5c518;
   }
 
   .review-box {
     background-color: #202225;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 12px;
+    padding: 16px 20px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    line-height: 1.5;
     color: #dcddde;
   }
 
   .review-box strong {
-    color: #5865f2;
+    color: #faa61a;
+    font-size: 1.1em;
+  }
+
+  .review-box small {
+    display: block;
+    margin-top: 5px;
+    color: #72767d;
+  }
+
+  textarea {
+    width: 100%;
+    padding: 12px;
+    background-color: #40444b;
+    color: #dcddde;
+    border: 1px solid #2c2f33;
+    border-radius: 6px;
+    resize: vertical;
+    min-height: 100px;
+    margin-bottom: 15px;
+    font-family: inherit;
+  }
+
+  .btn {
+    padding: 10px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background-color: #5865f2;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background-color: #4752c4;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background-color: #40444b;
+    color: #dcddde;
+  }
+
+  .btn-secondary:hover {
+    background-color: #36393f;
+    transform: translateY(-2px);
   }
 </style>
 
-<div class="content-wrapper">
-  <main class="main-content">
-    <h2>Відгуки про групу: {{ group.name }}</h2>
+<div class="reviews-wrapper">
+  <h2>Відгуки про групу: {{ group.name }}</h2>
 
-    {% if is_member %}
-      <form method="post">
-        {% csrf_token %}
+  {% if is_member %}
+    <form method="post">
+      {% csrf_token %}
 
-        {{ form.content }}
+      {{ form.content }}
 
-        <div class="form-group">
-          <label for="id_rating">Оцініть групу:</label>
-          <div class="star-rating">
-            {% for i in "54321" %}
-              <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}">
-              <label for="star{{ i }}">★</label>
-            {% endfor %}
-          </div>
+      <div class="form-group" style="margin-top: 10px;">
+        <label for="id_rating">Оцініть групу:</label>
+        <div class="star-rating">
+          {% for i in "54321" %}
+            <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}">
+            <label for="star{{ i }}">★</label>
+          {% endfor %}
         </div>
+      </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Надіслати відгук</button>
-      </form>
-      <hr>
-    {% else %}
-      <p><em>Тільки учасники групи можуть залишати відгуки.</em></p>
-    {% endif %}
+      <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Надіслати відгук</button>
+    </form>
+    <hr style="margin: 30px 0; border-color: #444;">
+  {% else %}
+    <p><em>Тільки учасники групи можуть залишати відгуки.</em></p>
+  {% endif %}
 
-    <h3>Усі відгуки</h3>
-    <ul class="posts-list">
-      {% for review in reviews %}
-        <li class="review-box">
-          <strong>{{ review.author.username|escape }}</strong>:
-          {{ review.content|linebreaksbr|escape }}<br>
-          <small style="color:#72767d;">
-            ★ {{ review.rating }}/5 – {{ review.created_at|date:"d.m.Y H:i" }}
-          </small>
-        </li>
-      {% empty %}
-        <li>Відгуки відсутні.</li>
-      {% endfor %}
-    </ul>
+  <h3>Усі відгуки</h3>
+  <ul class="posts-list" style="list-style: none; padding: 0;">
+    {% for review in reviews %}
+      <li class="review-box">
+        <strong>{{ review.author.username|escape }}</strong>:
+        {{ review.content|linebreaksbr|escape }}
+        <small>★ {{ review.rating }}/5 – {{ review.created_at|date:"d.m.Y H:i" }}</small>
+      </li>
+    {% empty %}
+      <li>Відгуки відсутні.</li>
+    {% endfor %}
+  </ul>
 
-    <a href="{% url 'groups:group_detail' group.id %}" class="btn btn-secondary" style="margin-top: 20px;">
-      ← Назад до групи
-    </a>
-  </main>
+  <a href="{% url 'groups:group_detail' group.id %}" class="btn btn-secondary" style="margin-top: 30px;">
+    ← Назад до групи
+  </a>
 </div>
 {% endblock %}

@@ -2,18 +2,117 @@
 
 {% block title %}Редагування поста{% endblock %}
 
+{% block extra_head %}
+<style>
+  .edit-post-container {
+    max-width: 700px;
+    margin: 40px auto;
+    background-color: #2b2d31;
+    padding: 25px 30px;
+    border-radius: 10px;
+    color: #dcddde;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  .edit-post-container h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .edit-post-form textarea,
+  .edit-post-form input[type="file"] {
+    width: 100%;
+    background-color: #1e1f22;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #dcddde;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+
+  .edit-post-form label {
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: block;
+    color: #aaa;
+  }
+
+  .edit-post-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .btn-discord {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+    transition: 0.2s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-discord-primary {
+    background-color: #5865f2;
+    color: white;
+  }
+
+  .btn-discord-secondary {
+    background-color: #3c3f45;
+    color: #ccc;
+  }
+
+  .btn-discord-primary:hover {
+    background-color: #4752c4;
+  }
+
+  .btn-discord-secondary:hover {
+    background-color: #2b2d31;
+  }
+
+  .current-image {
+    margin-bottom: 15px;
+  }
+
+  .current-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid #444;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="edit-post-container">
+  <h2>✏️ Редагування поста</h2>
 
+  <form method="post" enctype="multipart/form-data" class="edit-post-form">
+    {% csrf_token %}
 
+    <label for="id_content">Текст поста:</label>
+    {{ form.content }}
 
-<div class="container mt-4">
-    <h2>Редагувати пост</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Зберегти</button>
-        <a href="{% url 'posts:feed' %}" class="btn btn-secondary">Скасувати</a>
-    </form>
+    <label for="id_image">Зображення (необов’язково):</label>
+    {{ form.image }}
+
+    {% if post.image %}
+      <div class="current-image">
+        <p style="margin-bottom: 8px; color: #bbb;">Поточне зображення:</p>
+        <img src="{{ post.image.url }}" alt="Поточне зображення">
+      </div>
+    {% endif %}
+
+    <div class="edit-post-buttons">
+      <button type="submit" class="btn-discord btn-discord-primary">💾 Зберегти</button>
+      <a href="{% url 'posts:feed' %}" class="btn-discord btn-discord-secondary">↩️ Скасувати</a>
+    </div>
+  </form>
 </div>
-
 {% endblock %}

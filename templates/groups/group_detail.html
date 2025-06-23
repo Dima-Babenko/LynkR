@@ -1,348 +1,348 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
+{% block title %}{{ group.name }}{% endblock %}
 
+{% block extra_head %}
 <style>
-  /* --- Основний контейнер --- */
+  body {
+    background-color: #2f3136;
+    color: #dcddde;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
   .content-wrapper {
     display: flex;
-    gap: 20px;
-    padding: 20px;
-    height: 80vh;
-    color: #dcddde;
-    background: #2f3136;
+    gap: 30px;
+    padding: 30px;
+    max-width: 1200px;
+    margin: auto;
   }
 
-  /* --- Основна частина --- */
   .main-content {
-    flex: 1;
+    flex: 2;
     background-color: #36393f;
+    padding: 20px;
     border-radius: 10px;
-    padding: 24px 28px;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
-    overflow-y: auto;
   }
 
-  /* Заголовки */
-  h2, h3 {
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 16px;
-  }
-
-  p {
-    color: #b9bbbe;
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
-
-  hr {
-    border: 0;
-    border-top: 1px solid #202225;
-    margin: 30px 0;
-  }
-
-  /* --- Кнопки --- */
-  button.btn {
-    font-weight: 700;
-    border-radius: 6px;
-    padding: 10px 22px;
-    cursor: pointer;
-    border: none;
-    font-size: 1rem;
-    transition: background-color 0.2s ease-in-out;
-    user-select: none;
-  }
-
-  button.btn-primary {
-    background-color: #5865f2;
-    color: #fff;
-  }
-  button.btn-primary:hover {
-    background-color: #4752c4;
-  }
-
-  button.btn-warning {
-    background-color: #f04747;
-    color: #fff;
-  }
-  button.btn-warning:hover {
-    background-color: #b33838;
-  }
-
-  button.btn-success {
-    background-color: #43b581;
-    color: #fff;
-  }
-  button.btn-success:hover {
-    background-color: #399d6c;
-  }
-
-  button.btn-secondary {
-    background-color: #4f545c;
-    color: #fff;
-  }
-  button.btn-secondary:hover {
-    background-color: #40444b;
-  }
-
-  /* --- Сайдбар --- */
   .sidebar {
-    width: 320px;
-    background: #36393f;
+    flex: 1;
+    background-color: #202225;
+    padding: 20px;
     border-radius: 10px;
-    padding: 24px 20px;
-    overflow-y: auto;
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
   }
 
-  .sidebar h4 {
-    margin-top: 0;
+  .section-block {
+    background-color: #2b2d31;
+    padding: 20px 25px;
+    border-radius: 12px;
     margin-bottom: 20px;
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: #fff;
-    border-bottom: 2px solid #202225;
-    padding-bottom: 12px;
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
   }
 
-  /* Групи ролей */
-  .role-group {
+  .chat-group-block {
+    background-color: #202225;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.4);
     margin-bottom: 30px;
   }
 
-  .role-group h5 {
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: #8e9297;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-    letter-spacing: 0.06em;
+  h2, h3, h4, h5 {
+    color: #fff;
   }
 
-  /* Список учасників */
-  .member-list {
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: #7289da;
+  }
+
+  .btn-secondary:hover {
+    background-color: #5b6eae;
+  }
+
+  .btn-success {
+    background-color: #43b581;
+  }
+
+  .btn-success:hover {
+    background-color: #369e6f;
+  }
+
+  .btn-warning {
+    background-color: #faa61a;
+    color: #000;
+  }
+
+  .btn-warning:hover {
+    background-color: #e69e1a;
+  }
+
+  .post-form-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .post-form-wrapper textarea {
+    background-color: #40444b;
+    color: #dcddde;
+    border: none;
+    border-radius: 5px;
+    padding: 8px;
+    width: 100%;
+  }
+
+  .post-form-wrapper input[type="file"] {
+    display: none;
+  }
+
+  .post-form-wrapper button {
+    background-color: #5865f2;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+
+  .file-label {
+    cursor: pointer;
+    font-size: 22px;
+    margin-right: 10px;
+    color: #aaa;
+  }
+
+  #posts-container {
+    background-color: #2b2d31;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  }
+
+  .posts-list {
     list-style: none;
     padding-left: 0;
     margin: 0;
-    max-height: 260px;
-    overflow-y: auto;
+  }
+
+  .posts-list li {
+    background-color: #36393f;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+  }
+
+  .posts-list li:hover {
+    background-color: #40444b;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  .bottom-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    border-top: 1px solid #444;
+    padding-top: 20px;
+  }
+
+  .role-group {
+    margin-bottom: 20px;
+  }
+
+  .member-list {
+    list-style: none;
+    padding-left: 0;
   }
 
   .member-list li {
     display: flex;
     align-items: center;
-    margin-bottom: 14px;
-    padding: 6px 8px;
-    border-radius: 8px;
-    transition: background-color 0.15s ease-in-out;
+    gap: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #444;
   }
-
-  .member-list li:hover {
-    background-color: #3a3c43;
-  }
-
-  /* Аватарка */
-  .member-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 16px;
-    border: 2.5px solid transparent;
-    flex-shrink: 0;
-    transition: border-color 0.2s ease-in-out;
-  }
-
-  .role-owner .member-avatar { border-color: #faa61a; }
-  .role-admin .member-avatar { border-color: #f04747; }
-  .role-moderator .member-avatar { border-color: #43b581; }
 
   .member-avatar img {
-    width: 100%;
-    height: 100%;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
     object-fit: cover;
   }
 
-  /* Ім'я учасника */
   .member-name {
-    font-size: 1rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    user-select: none;
-  }
-
-  .member-name.role-owner { color: #faa61a; font-weight: 700; }
-  .member-name.role-admin { color: #f04747; font-weight: 700; }
-  .member-name.role-moderator { color: #43b581; font-weight: 700; }
-  .member-name.role-member { color: #dcddde; font-weight: 600; }
-
-  /* Список постів */
-  ul.posts-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-  }
-
-  ul.posts-list li {
-    background-color: #2f3136;
-    padding: 14px 18px;
-    margin-bottom: 10px;
-    border-radius: 10px;
+    flex-grow: 1;
     color: #dcddde;
-    box-shadow: inset 0 0 5px #5865f2;
-    transition: box-shadow 0.3s ease-in-out;
   }
 
-  ul.posts-list li strong {
-    color: #5865f2;
-  }
-
-  ul.posts-list li:hover {
-    box-shadow: inset 0 0 15px #5865f2;
-  }
-
-  /* Форми */
-  form {
-    margin-top: 20px;
-  }
-
-  form textarea, form input[type="text"] {
-    width: 100%;
-    padding: 14px 16px;
-    border-radius: 8px;
-    border: none;
-    background-color: #202225;
-    color: #dcddde;
-    font-size: 1rem;
-    resize: vertical;
-    box-sizing: border-box;
-    margin-bottom: 16px;
-    transition: background-color 0.3s ease-in-out;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-
-  form textarea:focus, form input[type="text"]:focus {
-    outline: none;
-    background-color: #2f3136;
-  }
-
-  /* Select для ролей */
   select {
-    background-color: #202225;
+    background-color: #40444b;
+    color: #fff;
     border: none;
-    color: #dcddde;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-    font-size: 0.95rem;
+    border-radius: 5px;
+    padding: 5px;
   }
 
-  select:hover, select:focus {
-    background-color: #2f3136;
-    outline: none;
+  hr {
+    border-color: #444;
+    margin: 20px 0;
+  }
+
+  .post-file img {
+    max-width: 100%;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+
+  audio {
+    margin-top: 10px;
+    width: 100%;
   }
 </style>
+{% endblock %}
 
+{% block content %}
 <div class="content-wrapper">
 
   <main class="main-content">
-    <h2>{{ group.name|escape }}</h2>
-    <p>{{ group.description|linebreaksbr|escape }}</p>
-
-    <a href="{% url 'groups:group_reviews' group.id %}" class="btn btn-secondary" style="margin-top: 10px;">
-      Перейти до відгуків
-    </a>
 
     {% if is_member %}
-      <form action="{% url 'groups:leave_group' group.id %}" method="post" style="margin-top: 20px;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-warning">Вийти з групи</button>
-      </form>
-
-      <hr>
+    <div class="chat-group-block">
+      <h2>{{ group.name|escape }}</h2>
+      <p>{{ group.description|linebreaksbr|escape }}</p>
 
       {% if membership.role in 'owner moderator admin' %}
+        <div id="posts-container">
+          <ul class="posts-list">
+            {% for post in posts %}
+              <li>
+                <strong>{{ post.author.username|escape }}</strong>: {{ post.content|linebreaksbr|escape }}
+
+                {% if post.file %}
+                  {% with post.file.name|lower as filename %}
+                    <div class="post-file">
+                      {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
+                        <img src="{{ post.file.url }}" alt="Файл">
+                      {% elif ".mp3" in filename %}
+                        <audio controls>
+                          <source src="{{ post.file.url }}">
+                          Ваш браузер не підтримує аудіо.
+                        </audio>
+                      {% else %}
+                        <a href="{{ post.file.url }}" download>📎 Завантажити файл</a>
+                      {% endif %}
+                    </div>
+                  {% endwith %}
+                {% endif %}
+              </li>
+            {% empty %}
+              <li>Немає постів.</li>
+            {% endfor %}
+          </ul>
+        </div>
+
         <h3>Додати пост</h3>
-        <form action="{% url 'groups:create_group_post' group.id %}" method="post">
+        <form action="{% url 'groups:create_group_post' group.id %}" method="post" enctype="multipart/form-data" class="post-form-wrapper">
           {% csrf_token %}
-          {{ post_form.as_p }}
-          <button type="submit" class="btn btn-primary">Опублікувати</button>
+          <label for="id_file" class="file-label" title="Прикріпити файл">📎</label>
+          <input type="file" name="file" id="id_file" accept="image/*,audio/*,.gif,.mp4,.webm">
+          {{ post_form.content }}
+          <button type="submit" title="Опублікувати">➤</button>
         </form>
       {% else %}
-        <p><em>Лише модератори, адміністратори та власник можуть створювати пости.</em></p>
+        <div class="section-block">
+          <p><em>Лише модератори, адміністратори та власник можуть створювати пости.</em></p>
+        </div>
       {% endif %}
 
-      <hr>
-
-      <h3>Пости в групі</h3>
-      <ul class="posts-list">
-        {% for post in posts %}
-          <li><strong>{{ post.author.username|escape }}</strong>: {{ post.content|linebreaksbr|escape }}</li>
-        {% empty %}
-          <li>Немає постів.</li>
-        {% endfor %}
-      </ul>
+      <div class="bottom-buttons">
+        <a href="{% url 'groups:group_reviews' group.id %}" class="btn btn-secondary">💬 Відгуки</a>
+        <form action="{% url 'groups:leave_group' group.id %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-warning">🚪 Вийти з групи</button>
+        </form>
+      </div>
+    </div>
 
     {% else %}
+    <div class="section-block">
+      <h2>{{ group.name|escape }}</h2>
+      <p>{{ group.description|linebreaksbr|escape }}</p>
       <form method="post" style="margin-top: 20px;">
         {% csrf_token %}
         <p>Бажаєте приєднатися до цієї групи?</p>
         <button type="submit" name="confirm" class="btn btn-success">Так</button>
         <button type="submit" name="cancel" class="btn btn-secondary">Ні</button>
       </form>
+    </div>
     {% endif %}
+
   </main>
 
   <aside class="sidebar">
-    <h4>Учасники групи</h4>
-    {% regroup members by role as members_by_role %}
+    <div class="section-block">
+      <h4>Учасники групи</h4>
+      {% regroup members by role as members_by_role %}
 
-    {% for group_role in members_by_role %}
-      {% with group_role.grouper as role_code %}
-      <section class="role-group role-{{ role_code|lower }}">
-        <h5>
-          {% if role_code == 'owner' %}Власник
-          {% elif role_code == 'admin' %}Адміністратори
-          {% elif role_code == 'moderator' %}Модератори
-          {% else %}Учасники
-          {% endif %}
-        </h5>
-        <ul class="member-list">
-          {% for membership in group_role.list %}
-            <li>
-              <div class="member-avatar role-{{ membership.role }}">
-                {% if membership.user.avatar %}
-                  <img src="{{ membership.user.avatar.url }}" alt="{{ membership.user.username }}">
-                {% else %}
-                  <img src="{% static 'default_avatar.png' %}" alt="Avatar">
-                {% endif %}
-              </div>
-              <div class="member-name role-{{ membership.role }}">
-                {{ membership.user.username|escape }}
+      {% for group_role in members_by_role %}
+        {% with group_role.grouper as role_code %}
+        <section class="role-group role-{{ role_code|lower }}">
+          <h5>
+            {% if role_code == 'owner' %}Власник
+            {% elif role_code == 'admin' %}Адміністратори
+            {% elif role_code == 'moderator' %}Модератори
+            {% else %}Учасники
+            {% endif %}
+          </h5>
+          <ul class="member-list">
+            {% for membership in group_role.list %}
+              <li>
+                <div class="member-avatar role-{{ membership.role }}">
+                  {% if membership.user.avatar %}
+                    <img src="{{ membership.user.avatar.url }}" alt="{{ membership.user.username }}">
+                  {% else %}
+                    <img src="{% static 'default_avatar.png' %}" alt="Avatar">
+                  {% endif %}
+                </div>
+                <div class="member-name role-{{ membership.role }}">
+                  {{ membership.user.username|escape }}
 
-                {% if request.user == group.owner and membership.user != group.owner %}
-                  <form action="{% url 'groups:change_member_role' group.id membership.user.id %}" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <select name="new_role" onchange="this.form.submit()" title="Змінити роль">
-                      <option value="member" {% if membership.role == 'member' %}selected{% endif %}>Учасник</option>
-                      <option value="moderator" {% if membership.role == 'moderator' %}selected{% endif %}>Модератор</option>
-                      <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>Адміністратор</option>
-                    </select>
-                  </form>
-                {% endif %}
-              </div>
-            </li>
-          {% endfor %}
-        </ul>
-      </section>
-      {% endwith %}
-    {% endfor %}
+                  {% if request.user == group.owner and membership.user != group.owner %}
+                    <form action="{% url 'groups:change_member_role' group.id membership.user.id %}" method="post" style="display:inline;">
+                      {% csrf_token %}
+                      <select name="new_role" onchange="this.form.submit()" title="Змінити роль">
+                        <option value="member" {% if membership.role == 'member' %}selected{% endif %}>Учасник</option>
+                        <option value="moderator" {% if membership.role == 'moderator' %}selected{% endif %}>Модератор</option>
+                        <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>Адміністратор</option>
+                      </select>
+                    </form>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+        {% endwith %}
+      {% endfor %}
+    </div>
   </aside>
 </div>
-
 {% endblock %}

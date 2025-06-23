@@ -2,21 +2,133 @@
 
 {% block title %}Головна{% endblock %}
 
+{% block extra_head %}
+<style>
+  .welcome-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 40px 15px; /* трохи внутрішніх падінгів, щоб не притискалось до країв */
+    box-sizing: border-box;
+  }
+
+  .welcome-container {
+    background: #36393f;
+    padding: 40px 50px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    max-width: 600px;
+    text-align: center;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 2.8rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+
+  .alert {
+    padding: 20px 25px;
+    border-radius: 10px;
+    font-size: 1.15rem;
+    margin-bottom: 25px;
+    background-color: #202225;
+    color: #b9bbbe;
+  }
+
+  .alert-success {
+    background-color: #5865f2;
+    color: white;
+    font-weight: 600;
+  }
+
+  .alert-info {
+    background-color: #40444b;
+    color: #dcddde;
+  }
+
+  .btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .btn {
+    padding: 12px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    color: white;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-login {
+    background-color: #5865f2;
+  }
+
+  .btn-login:hover {
+    background-color: #4752c4;
+    transform: translateY(-2px);
+  }
+
+  .btn-register {
+    background-color: #faa61a;
+    color: #2f3136;
+  }
+
+  .btn-register:hover {
+    background-color: #e69e1a;
+    transform: translateY(-2px);
+  }
+
+  strong {
+    color: #faa61a;
+  }
+
+  @media (max-width: 480px) {
+    .welcome-container {
+      padding: 30px 20px;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+
+    .btn {
+      padding: 10px 22px;
+      font-size: 1rem;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="welcome-wrapper">
+  <div class="welcome-container">
+      <h1>Ласкаво просимо до нашої соцмережі!</h1>
 
+      {% if user.is_authenticated %}
+          <div class="alert alert-success" role="alert">
+              Ви увійшли як <strong>{{ user.username }}</strong><br>
+              Роль: <strong>{{ user.role }}</strong>
+          </div>
+      {% else %}
+          <div class="alert alert-info" role="alert">
+              Будь ласка, увійдіть або зареєструйтесь, щоб розпочати.
+          </div>
 
-<div class="text-center">
-    <h1 class="mb-4">Ласкаво просимо до соцмережі!</h1>
-
-    {% if user.is_authenticated %}
-        <div class="alert alert-success" role="alert">
-            Ви увійшли як <strong>{{ user.username }}</strong><br>
-            Роль: <strong>{{ user.role }}</strong>
-        </div>
-    {% else %}
-        <div class="alert alert-info" role="alert">
-            <p>Увійдіть або зареєструйтесь, щоб користуватися сайтом.</p>
-        </div>
-    {% endif %}
+          <div class="btn-group">
+              <a href="{% url 'accounts:login' %}" class="btn btn-login">Увійти</a>
+              <a href="{% url 'accounts:register' %}" class="btn btn-register">Зареєструватися</a>
+          </div>
+      {% endif %}
+  </div>
 </div>
 {% endblock %}
