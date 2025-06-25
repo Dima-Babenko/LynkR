@@ -1,6 +1,18 @@
 from django.db import models
 from django.conf import settings
 
+
+class Reaction(models.Model):
+    message = models.ForeignKey('Message', on_delete=models.CASCADE, related_name='reactions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    emoji = models.CharField(max_length=10)
+
+    class Meta:
+        unique_together = ('message', 'user')  # Один користувач — одна реакція на повідомлення
+
+    def __str__(self):
+        return f"{self.user.username} reacted {self.emoji} on message {self.message.id}"
+
 class Chat(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     participants = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='chats')

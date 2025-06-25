@@ -1,13 +1,16 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.db.models import Count
-from .models import Chat, Message
+from .models import Chat, Message, Reaction
 from .forms import MessageForm, GroupChatForm
-from django.http import JsonResponse
 from django.utils.timezone import now, timedelta
 from django.template.loader import render_to_string
-from notifications.models import Notification
+import json
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
+
 
 User = get_user_model()
 
@@ -94,3 +97,28 @@ def fetch_messages(request, chat_id):
     messages = chat.messages.select_related("sender").order_by("timestamp")
     html = render_to_string("chat/_messages.html", {"messages": messages, "request": request})
     return JsonResponse({"html": html})
+
+
+@login_required
+@require_POST
+def add_reaction(request):
+    try:
+        data = json.loads(request.body)
+        message_id = data.get('message_id')
+        emoji = data.get('emoji')
+
+        message = Message.objects.get(id=message_id)
+
+        reaction, created = Reaction.objects.update_or_create(
+            user=request.user,
+            message=message,
+            defaults={'emoji': emoji}
+        )
+
+        # Підвантажуємо всі реакції для цього повідомлення для оновлення в UI
+        reactions = list(message.reactions.values('emoji'))
+
+        return JsonResponse({'success': True, 'reactions': reactions})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})

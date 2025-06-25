@@ -1,15 +1,15 @@
 {% load static %}
 
 <style>
-  /* Основне для прокрутки */
   .message-container {
     max-height: 100%;
     overflow-y: auto;
-    overflow-x: hidden; /* прибирає нижній повзунок */
+    overflow-x: hidden;
     padding-right: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #444 #2b2d31;
   }
 
-  /* Стилізація вертикального повзунка для WebKit-браузерів */
   .message-container::-webkit-scrollbar {
     width: 8px;
   }
@@ -27,19 +27,21 @@
     background-color: #5865f2;
   }
 
-  /* Для Firefox */
-  .message-container {
-    scrollbar-width: thin;
-    scrollbar-color: #444 #2b2d31;
-  }
-
-  /* Весь блок повідомлень */
   .message {
+    position: relative;
     display: flex;
     gap: 12px;
     margin-bottom: 18px;
     font-family: 'Roboto', sans-serif;
     align-items: flex-start;
+    border: 1px solid #444;
+    border-radius: 8px;
+    padding: 8px 12px;
+    background-color: #2c2f33;
+  }
+
+  .message.self {
+    flex-direction: row-reverse;
   }
 
   .message .avatar {
@@ -61,13 +63,22 @@
     background: none;
     max-width: 80%;
     color: #dcddde;
+    text-align: left;
+  }
+
+  .message.self .content {
+    text-align: right;
   }
 
   .message .username {
     font-weight: 600;
-    color: #faa61a;
     font-size: 14px;
     margin-bottom: 2px;
+    color: #faa61a;
+  }
+
+  .message.self .username {
+    color: #57f287;
   }
 
   .message .text {
@@ -85,18 +96,6 @@
 
   .message .attachment {
     margin-top: 6px;
-  }
-
-  .message.self {
-    flex-direction: row-reverse;
-  }
-
-  .message.self .username {
-    color: #57f287;
-  }
-
-  .message.self .content {
-    text-align: right;
   }
 
   .attachment img,
@@ -121,54 +120,187 @@
   .discord-attachment-link:hover {
     text-decoration: underline;
   }
+
+  .reaction-picker {
+    display: none;
+    position: absolute;
+    background: #2f3136;
+    border-radius: 12px;
+    padding: 6px 10px;
+    gap: 8px;
+    color: white;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.7);
+    font-size: 22px;
+    z-index: 1000;
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  .reaction-picker span:hover {
+    background: #40444b;
+    border-radius: 8px;
+  }
+
+  .reactions {
+    margin-top: 6px;
+    font-size: 18px;
+    user-select: none;
+  }
+
+  .reactions span {
+    margin-right: 6px;
+  }
 </style>
 
-
-{% for message in messages %}
-  <div class="message {% if message.sender == user %}self{% endif %}">
-    <div class="avatar">
-      {% if message.sender.avatar %}
-        <img src="{{ message.sender.avatar.url }}" alt="{{ message.sender.username }}">
-      {% else %}
-        <img src="{% static 'img/default_avatar.png' %}" alt="Default avatar">
-      {% endif %}
-    </div>
-
-    <div class="content">
-      <div class="username">
-        {{ message.sender.username }}
-        <span class="timestamp">{{ message.timestamp|date:"d.m.Y H:i" }}</span>
+<div class="message-container" id="message-container">
+  {% for message in messages %}
+    <div class="message {% if message.sender == user %}self{% endif %}" data-message-id="{{ message.id }}">
+      <div class="avatar">
+        {% if message.sender.avatar %}
+          <img src="{{ message.sender.avatar.url }}" alt="{{ message.sender.username }}">
+        {% else %}
+          <img src="{% static 'img/default_avatar.png' %}" alt="Default avatar">
+        {% endif %}
       </div>
 
-      {% if message.text %}
-        <div class="text">{{ message.text|linebreaksbr }}</div>
-      {% endif %}
-
-      {% if message.file %}
-        <div class="attachment">
-          {% with message.file.name|lower as filename %}
-            {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
-              <img src="{{ message.file.url }}" alt="Зображення">
-            {% elif ".mp3" in filename %}
-              <audio controls>
-                <source src="{{ message.file.url }}" type="audio/mpeg">
-                Ваш браузер не підтримує аудіо.
-              </audio>
-            {% elif ".mp4" in filename %}
-              <video controls>
-                <source src="{{ message.file.url }}" type="video/mp4">
-                Ваш браузер не підтримує відео.
-              </video>
-            {% else %}
-              <a href="{{ message.file.url }}" class="discord-attachment-link" target="_blank">📎 Завантажити файл</a>
-            {% endif %}
-          {% endwith %}
+      <div class="content">
+        <div class="username">
+          {{ message.sender.username }}
+          <span class="timestamp">{{ message.timestamp|date:"d.m.Y H:i" }}</span>
         </div>
-      {% endif %}
+
+        {% if message.text %}
+          <div class="text">{{ message.text|linebreaksbr }}</div>
+        {% endif %}
+
+        {% if message.file %}
+          <div class="attachment">
+            {% with message.file.name|lower as filename %}
+              {% if ".jpg" in filename or ".jpeg" in filename or ".png" in filename or ".gif" in filename %}
+                <img src="{{ message.file.url }}" alt="Зображення">
+              {% elif ".mp3" in filename %}
+                <audio controls>
+                  <source src="{{ message.file.url }}" type="audio/mpeg">
+                  Ваш браузер не підтримує аудіо.
+                </audio>
+              {% elif ".mp4" in filename %}
+                <video controls>
+                  <source src="{{ message.file.url }}" type="video/mp4">
+                  Ваш браузер не підтримує відео.
+                </video>
+              {% else %}
+                <a href="{{ message.file.url }}" class="discord-attachment-link" target="_blank">📎 Завантажити файл</a>
+              {% endif %}
+            {% endwith %}
+          </div>
+        {% endif %}
+
+        <div class="reactions">
+          {% for reaction in message.reactions.all %}
+            <span>{{ reaction.emoji }}</span>
+          {% endfor %}
+        </div>
+      </div>
     </div>
-  </div>
-{% empty %}
-  <p style="color: #72767d; font-style: italic;">Немає повідомлень.</p>
-{% endfor %}
+  {% empty %}
+    <p style="color: #72767d; font-style: italic;">Немає повідомлень.</p>
+  {% endfor %}
+</div>
 
+<script>
+(() => {
+  const reactions = [
+    '👍', '❤️', '😂', '😮', '😢', '👎',
+    '🔥', '🎉', '🤔', '😎', '😡', '🙌',
+    '🤯', '💯', '😴', '👀',
+    '🤡', '💩', '🍀', '🤝', '👋'
+  ];
 
+  let reactionPicker = document.querySelector('.reaction-picker');
+  if (!reactionPicker) {
+    reactionPicker = document.createElement('div');
+    reactionPicker.className = 'reaction-picker';
+    reactions.forEach(r => {
+      const span = document.createElement('span');
+      span.textContent = r;
+      reactionPicker.appendChild(span);
+    });
+    document.body.appendChild(reactionPicker);
+  }
+
+  let currentMessage = null;
+  const container = document.getElementById('message-container');
+
+  const scrollToBottom = () => {
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
+  };
+
+  // Прокрутка вниз після завантаження
+  scrollToBottom();
+
+  document.querySelectorAll('.message').forEach(msg => {
+    msg.addEventListener('click', e => {
+      if (reactionPicker.contains(e.target)) return;
+      e.stopPropagation();
+      if (currentMessage === msg) {
+        reactionPicker.style.display = 'none';
+        currentMessage = null;
+        return;
+      }
+      currentMessage = msg;
+      const rect = msg.getBoundingClientRect();
+      reactionPicker.style.top = `${rect.top + window.scrollY - reactionPicker.offsetHeight - 8}px`;
+      reactionPicker.style.left = `${rect.left + window.scrollX}px`;
+      reactionPicker.style.display = 'flex';
+    });
+  });
+
+  reactionPicker.addEventListener('click', async e => {
+    if (e.target.tagName === 'SPAN' && currentMessage) {
+      const emoji = e.target.textContent;
+      const messageId = currentMessage.dataset.messageId;
+
+      try {
+        const response = await fetch('{% url "chat:add_reaction" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ message_id: messageId, emoji })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          const reactionsDiv = currentMessage.querySelector('.reactions');
+          reactionsDiv.innerHTML = '';
+          data.reactions.forEach(r => {
+            const span = document.createElement('span');
+            span.textContent = r.emoji;
+            reactionsDiv.appendChild(span);
+          });
+
+          // Прокрутка вниз після оновлення реакцій
+          scrollToBottom();
+        } else {
+          console.error('Помилка:', data.error);
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+      }
+
+      reactionPicker.style.display = 'none';
+      currentMessage = null;
+    }
+  });
+
+  document.addEventListener('click', () => {
+    reactionPicker.style.display = 'none';
+    currentMessage = null;
+  });
+})();
+</script>
