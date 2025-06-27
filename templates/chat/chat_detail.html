@@ -11,7 +11,6 @@
     font-family: 'Roboto', sans-serif;
     margin: 0;
   }
-
   .chat-container {
     display: flex;
     flex-direction: column;
@@ -20,13 +19,11 @@
     margin: auto;
     padding: 20px;
   }
-
   .user-status {
     font-weight: bold;
     font-size: 16px;
     margin-bottom: 10px;
   }
-
   #chat-messages {
     flex: 1;
     overflow-y: auto;
@@ -35,7 +32,6 @@
     border-radius: 8px;
     margin-bottom: 10px;
   }
-
   #chat-form-wrapper {
     position: sticky;
     bottom: 0;
@@ -43,13 +39,11 @@
     padding-top: 10px;
     padding-bottom: 10px;
   }
-
   #chat-form {
     display: flex;
     gap: 10px;
     align-items: center;
   }
-
   #chat-form textarea {
     flex-grow: 1;
     background-color: #40444b;
@@ -60,7 +54,6 @@
     resize: none;
     height: 48px;
   }
-
   #chat-form button {
     background-color: #5865f2;
     color: white;
@@ -69,15 +62,12 @@
     border-radius: 6px;
     font-weight: bold;
   }
-
   #chat-form button:hover {
     background-color: #4752c4;
   }
-
   #file-upload {
     display: none;
   }
-
   .file-label {
     font-size: 20px;
     color: #dcddde;
@@ -85,20 +75,36 @@
     padding: 8px;
     border-radius: 6px;
   }
-
   .file-label:hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
-
   .new-message {
     margin-bottom: 10px;
     background-color: #40444b;
     border-radius: 6px;
     padding: 10px;
   }
-
   .new-message strong {
     color: #faa61a;
+  }
+  #reply-preview {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-left: 4px solid #5865f2;
+    background-color: #40444b;
+    color: #aaa;
+    border-radius: 4px;
+    font-size: 14px;
+    display: none;
+    position: relative;
+  }
+  #reply-preview .close-reply {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    color: #dc3545;
   }
 </style>
 {% endblock %}
@@ -119,8 +125,10 @@
   </div>
 
   <div id="chat-form-wrapper">
+    <div id="reply-preview"></div>  {# ТЕПЕР ПЕРЕД ФОРМОЮ #}
     <form method="post" enctype="multipart/form-data" id="chat-form">
       {% csrf_token %}
+      <input type="hidden" name="reply_to" id="id_reply_to">
       <label for="file-upload" class="file-label" title="Прикріпити файл">📎</label>
       <input type="file" name="file" id="file-upload">
       <textarea name="text" placeholder="Напиши щось..." id="message-text"></textarea>
@@ -136,8 +144,9 @@
   const textField = document.getElementById('message-text');
   const fileInput = document.getElementById('file-upload');
   const messagesContainer = document.getElementById('chat-messages');
+  const replyInput = document.getElementById('id_reply_to');
+  const replyPreview = document.getElementById('reply-preview');
 
-  // Прокрутка до останнього повідомлення
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
   const roomName = "{{ room_name }}";
@@ -158,7 +167,6 @@
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   };
 
-  // Надсилання через Enter
   textField.addEventListener('keydown', function(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -166,22 +174,22 @@
       if (message) {
         chatSocket.send(JSON.stringify({ message }));
         textField.value = '';
+        replyInput.value = '';
+        replyPreview.style.display = 'none';
+        replyPreview.innerHTML = '';
       }
     }
   });
 
-  // Валідація при відправці форми
   form.addEventListener('submit', function(e) {
     const hasText = textField.value.trim().length > 0;
     const hasFile = fileInput.files.length > 0;
-
     if (!hasText && !hasFile) {
       e.preventDefault();
       alert('Не можна надіслати порожнє повідомлення.');
     }
   });
 
-  // Автовідправка при виборі файлу
   fileInput.addEventListener('change', function() {
     if (fileInput.files.length > 0) {
       const hasText = textField.value.trim().length > 0;
@@ -189,6 +197,24 @@
         form.requestSubmit();
       }
     }
+  });
+
+  document.querySelectorAll('.message').forEach(msg => {
+    msg.addEventListener('dblclick', function () {
+      const id = msg.dataset.messageId;
+      const text = msg.querySelector('.text')?.textContent || '[файл]';
+      replyInput.value = id;
+      replyPreview.innerHTML = `
+        <div><strong>Ви відповідаєте:</strong> ${text}
+        <span class="close-reply" title="Скасувати">×</span></div>
+      `;
+      replyPreview.style.display = 'block';
+      replyPreview.querySelector('.close-reply').addEventListener('click', () => {
+        replyPreview.innerHTML = '';
+        replyInput.value = '';
+        replyPreview.style.display = 'none';
+      });
+    });
   });
 </script>
 {% endblock %}

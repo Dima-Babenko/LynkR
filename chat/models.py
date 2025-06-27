@@ -35,6 +35,7 @@ class Message(models.Model):
     file = models.FileField(upload_to='chat_files/', blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    reply_to = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='replies')
 
     def __str__(self):
         return f"{self.sender} → {self.chat}: {self.text[:30]}"

@@ -3,12 +3,12 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count
 from .models import Chat, Message, Reaction
 from .forms import MessageForm, GroupChatForm
-from django.utils.timezone import now, timedelta
 from django.template.loader import render_to_string
 import json
 from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now, timedelta
 
 
 
@@ -25,7 +25,7 @@ def chat_detail(request, chat_id):
     if request.user not in chat.participants.all():
         return redirect('chat:chat_list')
 
-    messages = chat.messages.all()
+    messages = chat.messages.select_related("sender", "reply_to")
     other_user = chat.get_other_user(request.user)
 
     is_online = False
@@ -33,19 +33,22 @@ def chat_detail(request, chat_id):
         is_online = now() - other_user.last_seen < timedelta(seconds=60)
 
     form = MessageForm(request.POST or None, request.FILES or None)
+
     if request.method == "POST" and form.is_valid():
         message = form.save(commit=False)
         message.chat = chat
         message.sender = request.user
-        message.save()
 
-        # 📢 Створюємо сповіщення для іншого користувача
-        # if other_user:
-        #     Notification.objects.create(
-        #         user=other_user,
-        #         notification_type='message',
-        #         message=f"{request.user.username} надіслав вам повідомлення."
-        #     )
+        # 🔽 Обробка відповіді на інше повідомлення
+        reply_to_id = request.POST.get("reply_to")
+        if reply_to_id:
+            try:
+                reply_to_msg = Message.objects.get(id=reply_to_id, chat=chat)
+                message.reply_to = reply_to_msg
+            except Message.DoesNotExist:
+                message.reply_to = None
+
+        message.save()
 
         return redirect('chat:chat_detail', chat_id=chat.id)
 

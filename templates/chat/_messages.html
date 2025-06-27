@@ -126,31 +126,67 @@
     position: absolute;
     background: #2f3136;
     border-radius: 12px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     gap: 8px;
     color: white;
     user-select: none;
-    cursor: pointer;
+    cursor: default;
     box-shadow: 0 2px 10px rgba(0,0,0,0.7);
     font-size: 22px;
     z-index: 1000;
-    flex-wrap: nowrap;
     align-items: center;
+    width: max-content;
+    max-width: 320px;
+    flex-wrap: nowrap;
+  }
+
+  .reaction-picker.expanded {
+    flex-wrap: wrap;
+    max-width: 350px;
+    max-height: 140px;
+    overflow-y: auto;
+    padding-bottom: 6px;
+  }
+
+  .reaction-picker span {
+    padding: 4px 8px;
+    border-radius: 8px;
+    user-select: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
   }
 
   .reaction-picker span:hover {
     background: #40444b;
-    border-radius: 8px;
   }
 
-  .reactions {
-    margin-top: 6px;
-    font-size: 18px;
+  .reaction-picker .scroll-arrow {
+    font-size: 22px;
+    user-select: none;
+    cursor: pointer;
+    color: #ccc;
+    margin-left: 6px;
     user-select: none;
   }
 
-  .reactions span {
-    margin-right: 6px;
+  .reaction-picker .scroll-arrow:hover {
+    color: white;
+  }
+
+  .reaction-picker.expanded::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .reaction-picker.expanded::-webkit-scrollbar-track {
+    background: #2f3136;
+  }
+
+  .reaction-picker.expanded::-webkit-scrollbar-thumb {
+    background: #5865f2;
+    border-radius: 3px;
   }
 </style>
 
@@ -170,6 +206,12 @@
           {{ message.sender.username }}
           <span class="timestamp">{{ message.timestamp|date:"d.m.Y H:i" }}</span>
         </div>
+
+        {% if message.reply_to %}
+          <div class="reply-preview" style="font-size: 13px; color: #aaa; padding: 4px 8px; border-left: 3px solid #5865f2; margin-bottom: 6px;">
+            <strong>{{ message.reply_to.sender.username }}</strong>: {{ message.reply_to.text|truncatechars:100 }}
+          </div>
+        {% endif %}
 
         {% if message.text %}
           <div class="text">{{ message.text|linebreaksbr }}</div>
@@ -209,6 +251,12 @@
   {% endfor %}
 </div>
 
+<form method="POST" action="{% url 'chat:chat_detail' chat.id %}">
+  {% csrf_token %}
+  <input type="hidden" name="reply_to" value="">
+  <div id="reply-preview-box" style="margin-bottom: 12px;"></div>
+</form>
+
 <script>
 (() => {
   const reactions = [
@@ -222,11 +270,55 @@
   if (!reactionPicker) {
     reactionPicker = document.createElement('div');
     reactionPicker.className = 'reaction-picker';
-    reactions.forEach(r => {
+
+    const visibleCount = 5;
+    let expanded = false;
+
+    reactions.forEach((r, idx) => {
       const span = document.createElement('span');
       span.textContent = r;
+      if(idx >= visibleCount) {
+        span.style.display = 'none';
+      }
       reactionPicker.appendChild(span);
     });
+
+    const scrollArrow = document.createElement('span');
+    scrollArrow.className = 'scroll-arrow';
+    scrollArrow.textContent = '▸';
+    scrollArrow.title = 'Показати всі реакції';
+    reactionPicker.appendChild(scrollArrow);
+
+    scrollArrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      expanded = !expanded;
+      if(expanded){
+        reactionPicker.classList.add('expanded');
+        Array.from(reactionPicker.querySelectorAll('span')).forEach((span, idx) => {
+          if(!span.classList.contains('scroll-arrow')) {
+            span.style.display = 'inline-flex';
+          }
+        });
+        scrollArrow.textContent = '▾';
+        scrollArrow.title = 'Сховати реакції';
+      } else {
+        reactionPicker.classList.remove('expanded');
+        Array.from(reactionPicker.querySelectorAll('span')).forEach((span, idx) => {
+          if(idx < visibleCount) {
+            if(!span.classList.contains('scroll-arrow')) {
+              span.style.display = 'inline-flex';
+            }
+          } else {
+            if(!span.classList.contains('scroll-arrow')) {
+              span.style.display = 'none';
+            }
+          }
+        });
+        scrollArrow.textContent = '▸';
+        scrollArrow.title = 'Показати всі реакції';
+      }
+    });
+
     document.body.appendChild(reactionPicker);
   }
 
@@ -239,7 +331,6 @@
     }
   };
 
-  // Прокрутка вниз після завантаження
   scrollToBottom();
 
   document.querySelectorAll('.message').forEach(msg => {
@@ -253,14 +344,29 @@
       }
       currentMessage = msg;
       const rect = msg.getBoundingClientRect();
-      reactionPicker.style.top = `${rect.top + window.scrollY - reactionPicker.offsetHeight - 8}px`;
-      reactionPicker.style.left = `${rect.left + window.scrollX}px`;
+
+      let top = rect.top + window.scrollY - reactionPicker.offsetHeight - 8;
+      let left = rect.left + window.scrollX;
+
+      const rightEdge = left + reactionPicker.offsetWidth;
+      const viewportWidth = window.innerWidth;
+      if (rightEdge > viewportWidth) {
+        left = viewportWidth - reactionPicker.offsetWidth - 10;
+      }
+      if (left < 10) left = 10;
+
+      reactionPicker.style.top = `${top}px`;
+      reactionPicker.style.left = `${left}px`;
       reactionPicker.style.display = 'flex';
+
+      if(reactionPicker.classList.contains('expanded')){
+        scrollArrow.click();
+      }
     });
   });
 
   reactionPicker.addEventListener('click', async e => {
-    if (e.target.tagName === 'SPAN' && currentMessage) {
+    if (e.target.tagName === 'SPAN' && currentMessage && !e.target.classList.contains('scroll-arrow')) {
       const emoji = e.target.textContent;
       const messageId = currentMessage.dataset.messageId;
 
@@ -283,8 +389,6 @@
             span.textContent = r.emoji;
             reactionsDiv.appendChild(span);
           });
-
-          // Прокрутка вниз після оновлення реакцій
           scrollToBottom();
         } else {
           console.error('Помилка:', data.error);

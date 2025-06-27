@@ -9,4 +9,6 @@ urlpatterns = [
     path('start/<int:user_id>/', views.start_private_chat, name='start_private_chat'),
     path('create_group/', views.create_group_chat, name='create_group_chat'),
     path('<int:chat_id>/fetch_messages/', views.fetch_messages, name='fetch_messages'),
+    path('add-reaction/', views.add_reaction, name='add_reaction'),
+
 ]
