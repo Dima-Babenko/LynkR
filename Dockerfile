@@ -10,5 +10,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 # Відкриваємо порт, який використовується Django
 EXPOSE 8000
+#міграції
+CMD ["python", "manage.py", "makemigrations"]
+CMD ["python", "manage.py", "migrate"]
 # Запускаємо сервер Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
