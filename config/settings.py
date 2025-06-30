@@ -12,6 +12,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['.onrender.com', "127.0.0.1"]
 
+# Додано для уникнення помилки CSRF Origin checking failed
+CSRF_TRUSTED_ORIGINS = [
+    "https://lynkr-6.onrender.com",
+]
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
