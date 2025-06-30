@@ -8,11 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-6pwm@w(w!xy0290pzgst6&#f$eoj1d(ilcl6e6c*d0!+8j(azs'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://lynkr-4.onrender.com",
-]
+DEBUG = True
 
 ALLOWED_HOSTS = ['.onrender.com', "127.0.0.1"]
 
