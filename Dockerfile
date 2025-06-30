@@ -8,10 +8,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 # Копіюємо вміст проекту в контейнер
 COPY . .
+#міграції
+RUN python manage.py makemigrations
+RUN python manage.py migrate
 # Відкриваємо порт, який використовується Django
 EXPOSE 8000
-#міграції
-CMD ["python", "manage.py", "makemigrations"]
-CMD ["python", "manage.py", "migrate"]
 # Запускаємо сервер Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
