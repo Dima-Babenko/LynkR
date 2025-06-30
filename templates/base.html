@@ -156,7 +156,7 @@
         <a href="{% url 'posts:feed' %}" title="Пости">📄</a>
         <a href="{% url 'chat:chat_list' %}" title="Чати">💬</a>
         <a href="{% url 'groups:group_list' %}" title="Групи">👥</a>
-        <a href="{% url 'friends' %}" title="Друзі">👤</a>
+        <a href="{% url 'accounts:friends' %}" title="Друзі">👤</a>
         <a href="{% url 'notification_list' %}" title="Сповіщення" style="position: relative;">
           🔔
           {% if unread_notifications_count > 0 %}
@@ -177,11 +177,11 @@
           {% endif %}
         </a>
 
-        <a href="{% url 'profile' %}" title="Профіль">⚙️</a>
-        <a href="{% url 'logout' %}" title="Вихід" style="color: #f04747;">🚪</a>
+        <a href="{% url 'accounts:profile' %}" title="Профіль">⚙️</a>
+        <a href="{% url 'accounts:logout' %}" title="Вихід" style="color: #f04747;">🚪</a>
       {% else %}
-        <a href="{% url 'login' %}" title="Вхід">🔐</a>
-        <a href="{% url 'register' %}" title="Реєстрація">📝</a>
+        <a href="{% url 'accounts:login' %}" title="Вхід">🔐</a>
+        <a href="{% url 'accounts:register' %}" title="Реєстрація">📝</a>
       {% endif %}
     </aside>
 
@@ -216,7 +216,7 @@
             <div class="username">{{ user.username }}</div>
             <div class="role">{{ user.get_role_display }}</div>
           </div>
-          <a href="{% url 'edit_profile' %}" class="edit-link">Редагувати</a>
+          <a href="{% url 'accounts:edit_profile' %}" class="edit-link">Редагувати</a>
         </div>
       {% endif %}
     </aside>

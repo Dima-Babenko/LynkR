@@ -129,7 +129,7 @@
   <hr>
 
   <h3>Знайти користувача за friend ID</h3>
-  <form method="get" action="{% url 'friends' %}">
+  <form method="get" action="{% url 'accounts:friends' %}">
     <input type="text" name="friend_id" placeholder="Введіть friend ID" autocomplete="off" required>
     <button type="submit">Знайти</button>
   </form>
@@ -179,7 +179,7 @@
       {% if sub.follower.id not in following_ids %}
         <li>
           {{ sub.follower.username }} <span style="opacity:0.7;">({{ sub.follower.friend_id }})</span>
-          <form method="post" action="{% url 'subscribe' %}" class="inline-form">
+          <form method="post" action="{% url 'accounts:subscribe' %}" class="inline-form">
             {% csrf_token %}
             <input type="hidden" name="friend_id" value="{{ sub.follower.friend_id }}">
             <button type="submit">Підписатися у відповідь</button>
