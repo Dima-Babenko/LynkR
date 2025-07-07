@@ -144,7 +144,7 @@
     {% elif already_subscribed %}
       <p class="status warning">🔔 Ви вже підписані на цього користувача. Очікується підписка у відповідь.</p>
     {% else %}
-      <form method="post" action="{% url 'subscribe' %}">
+      <form method="post" action="{% url 'accounts:subscribe' %}">
         {% csrf_token %}
         <input type="hidden" name="friend_id" value="{{ found_user.friend_id }}">
         <button type="submit">Підписатись</button>

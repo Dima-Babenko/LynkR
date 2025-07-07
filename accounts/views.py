@@ -64,7 +64,7 @@ def edit_profile_view(request):
         form = EditProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect('profile')
+            return redirect('accounts:profile')
     else:
         form = EditProfileForm(instance=request.user)
     return render(request, 'accounts/edit_profile.html', {'form': form})
@@ -78,7 +78,7 @@ def change_friend_id(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Ваш ID оновлено.')
-            return redirect('friends')
+            return redirect('accounts:friends')
     else:
         form = EditProfileForm(instance=request.user)
     return render(request, 'accounts/change_friend_id.html', {'form': form})
@@ -93,11 +93,11 @@ def subscribe_view(request):
 
         if not to_user:
             messages.error(request, 'Користувача з таким ID не знайдено.')
-            return redirect('friends')
+            return redirect('accounts:friends')
 
         if Subscription.objects.filter(follower=request.user, following=to_user).exists():
             messages.info(request, 'Ви вже підписані на цього користувача.')
-            return redirect('friends')
+            return redirect('accounts:friends')
 
         # Підписка
         Subscription.objects.create(follower=request.user, following=to_user)
@@ -117,7 +117,7 @@ def subscribe_view(request):
 
                 messages.success(request, f'Ви і {to_user.username} тепер друзі!')
 
-        return redirect('friends')
+        return redirect('accounts:friends')
 
 
 # Видалити друга (відписка + видалення дружби)
@@ -148,7 +148,7 @@ def remove_friend(request, chat_id):
             # Видаляємо чат
             chat.delete()
 
-        return redirect('friends')
+        return redirect('accounts:friends')
     else:
         return HttpResponseForbidden("Метод не дозволений.")
 

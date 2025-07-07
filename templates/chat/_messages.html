@@ -15,7 +15,7 @@
   }
 
   .message-container::-webkit-scrollbar-track {
-    background: #2b2d31;
+    background: #2f3136;
   }
 
   .message-container::-webkit-scrollbar-thumb {
@@ -121,34 +121,73 @@
     text-decoration: underline;
   }
 
+  .reactions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .reactions span {
+    padding: 4px 8px;
+    border-radius: 8px;
+    user-select: none;
+    cursor: pointer;
+    background-color: #3a3c43;
+    transition: background-color 0.2s ease;
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reactions span:hover {
+    background-color: #5865f2;
+    color: white;
+  }
+
+  /* Меню вибору реакцій */
   .reaction-picker {
     display: none;
     position: absolute;
     background: #2f3136;
     border-radius: 12px;
     padding: 6px 12px;
-    gap: 8px;
+    gap: 10px;
     color: white;
     user-select: none;
     cursor: default;
     box-shadow: 0 2px 10px rgba(0,0,0,0.7);
     font-size: 22px;
     z-index: 1000;
-    align-items: center;
     width: max-content;
-    max-width: 320px;
-    flex-wrap: nowrap;
+    max-width: 350px;
+    flex-direction: column;
+    border: 2px solid #5865f2;
   }
 
-  .reaction-picker.expanded {
-    flex-wrap: wrap;
-    max-width: 350px;
+  .reaction-picker .emojis {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
+    align-items: center;
+  }
+
+  /* При розгортанні - сітка 5 колонок */
+  .reaction-picker.expanded .emojis {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
     max-height: 140px;
     overflow-y: auto;
-    padding-bottom: 6px;
   }
 
-  .reaction-picker span {
+  .reaction-picker .emojis span {
     padding: 4px 8px;
     border-radius: 8px;
     user-select: none;
@@ -157,36 +196,71 @@
     align-items: center;
     justify-content: center;
     transition: background-color 0.2s ease;
-  }
-
-  .reaction-picker span:hover {
-    background: #40444b;
-  }
-
-  .reaction-picker .scroll-arrow {
     font-size: 22px;
-    user-select: none;
-    cursor: pointer;
-    color: #ccc;
-    margin-left: 6px;
-    user-select: none;
+    background: #3a3c43;
+    white-space: nowrap;
   }
 
-  .reaction-picker .scroll-arrow:hover {
+  .reaction-picker .emojis span:hover {
+    background: #5865f2;
     color: white;
   }
 
-  .reaction-picker.expanded::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .reaction-picker.expanded::-webkit-scrollbar-track {
-    background: #2f3136;
-  }
-
-  .reaction-picker.expanded::-webkit-scrollbar-thumb {
+  /* Кнопка розгортання/згортання */
+  .reaction-picker .toggle-btn {
+    font-size: 22px;
+    cursor: pointer;
+    padding: 4px 10px;
     background: #5865f2;
-    border-radius: 3px;
+    border-radius: 8px;
+    user-select: none;
+    color: white;
+    margin-left: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reaction-picker.expanded .toggle-btn {
+    margin-left: 0;
+    margin-top: 8px;
+    align-self: center;
+    grid-column: span 5;
+  }
+
+  .reaction-picker .actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .reaction-picker .actions span {
+    font-size: 16px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    user-select: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    white-space: nowrap;
+    color: white;
+    background-color: #3a3c43;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reaction-picker .actions span.edit-btn:hover {
+    background-color: #5865f2;
+  }
+
+  .reaction-picker .actions span.delete-btn {
+    color: #ff4d4f;
+  }
+
+  .reaction-picker .actions span.delete-btn:hover {
+    background-color: #a02323;
   }
 </style>
 
@@ -259,127 +333,182 @@
 
 <script>
 (() => {
-  const reactions = [
-    '👍', '❤️', '😂', '😮', '😢', '👎',
-    '🔥', '🎉', '🤔', '😎', '😡', '🙌',
-    '🤯', '💯', '😴', '👀',
-    '🤡', '💩', '🍀', '🤝', '👋'
-  ];
-
+  const reactions = ['👍','❤️','😂','😮','😢','👎','🔥','🎉','🤔','😎','😡','🙌','🤯','💯','😴','👀','🤡','💩','🍀','🤝','👋'];
+  const maxVisible = 5;
   let reactionPicker = document.querySelector('.reaction-picker');
+
   if (!reactionPicker) {
     reactionPicker = document.createElement('div');
     reactionPicker.className = 'reaction-picker';
 
-    const visibleCount = 5;
-    let expanded = false;
+    const emojisDiv = document.createElement('div');
+    emojisDiv.className = 'emojis';
 
-    reactions.forEach((r, idx) => {
+    reactions.forEach((emoji, idx) => {
       const span = document.createElement('span');
-      span.textContent = r;
-      if(idx >= visibleCount) {
-        span.style.display = 'none';
-      }
-      reactionPicker.appendChild(span);
+      span.textContent = emoji;
+      if (idx >= maxVisible) span.style.display = 'none';
+      emojisDiv.appendChild(span);
     });
 
-    const scrollArrow = document.createElement('span');
-    scrollArrow.className = 'scroll-arrow';
-    scrollArrow.textContent = '▸';
-    scrollArrow.title = 'Показати всі реакції';
-    reactionPicker.appendChild(scrollArrow);
+    const toggleBtn = document.createElement('span');
+    toggleBtn.className = 'toggle-btn';
+    toggleBtn.textContent = '▸';
+    toggleBtn.title = 'Показати всі реакції';
+    emojisDiv.appendChild(toggleBtn);
 
-    scrollArrow.addEventListener('click', (e) => {
-      e.stopPropagation();
-      expanded = !expanded;
-      if(expanded){
-        reactionPicker.classList.add('expanded');
-        Array.from(reactionPicker.querySelectorAll('span')).forEach((span, idx) => {
-          if(!span.classList.contains('scroll-arrow')) {
-            span.style.display = 'inline-flex';
-          }
-        });
-        scrollArrow.textContent = '▾';
-        scrollArrow.title = 'Сховати реакції';
-      } else {
-        reactionPicker.classList.remove('expanded');
-        Array.from(reactionPicker.querySelectorAll('span')).forEach((span, idx) => {
-          if(idx < visibleCount) {
-            if(!span.classList.contains('scroll-arrow')) {
-              span.style.display = 'inline-flex';
-            }
-          } else {
-            if(!span.classList.contains('scroll-arrow')) {
-              span.style.display = 'none';
-            }
-          }
-        });
-        scrollArrow.textContent = '▸';
-        scrollArrow.title = 'Показати всі реакції';
-      }
-    });
+    reactionPicker.appendChild(emojisDiv);
+
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'actions';
+
+    const editBtn = document.createElement('span');
+    editBtn.textContent = '✏️ Редагувати';
+    editBtn.classList.add('edit-btn');
+    actionsDiv.appendChild(editBtn);
+
+    const deleteBtn = document.createElement('span');
+    deleteBtn.textContent = '🗑️ Видалити';
+    deleteBtn.classList.add('delete-btn');
+    actionsDiv.appendChild(deleteBtn);
+
+    reactionPicker.appendChild(actionsDiv);
 
     document.body.appendChild(reactionPicker);
+
+    let expanded = false;
+
+    toggleBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      expanded = !expanded;
+      const spans = emojisDiv.querySelectorAll('span:not(.toggle-btn)');
+      spans.forEach(span => {
+        span.style.display = expanded ? 'inline-flex' : 'none';
+      });
+      if (!expanded) {
+        for(let i=0; i<maxVisible; i++) {
+          if (spans[i]) spans[i].style.display = 'inline-flex';
+        }
+      }
+      reactionPicker.classList.toggle('expanded', expanded);
+      toggleBtn.textContent = expanded ? '▾' : '▸';
+      toggleBtn.title = expanded ? 'Сховати реакції' : 'Показати всі реакції';
+    });
+
+    editBtn.addEventListener('click', async () => {
+      if (!currentMessage) return;
+      const messageId = currentMessage.dataset.messageId;
+      const textDiv = currentMessage.querySelector('.text');
+      const oldText = textDiv?.textContent || '';
+      const newText = prompt('Редагувати повідомлення:', oldText);
+      if (newText === null || newText.trim() === '') return;
+      try {
+        const response = await fetch('{% url "chat:edit_message" %}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+          body: JSON.stringify({ message_id: messageId, new_text: newText })
+        });
+        const data = await response.json();
+        if (data.success) textDiv.innerHTML = data.new_text.replace(/\n/g, '<br>');
+        else alert('Помилка при редагуванні: ' + data.error);
+      } catch (err) { console.error(err); }
+      reactionPicker.style.display = 'none';
+      currentMessage = null;
+    });
+
+    deleteBtn.addEventListener('click', async () => {
+      if (!currentMessage) return;
+      const messageId = currentMessage.dataset.messageId;
+      if (!confirm('Ви впевнені, що хочете видалити це повідомлення?')) return;
+      try {
+        const response = await fetch('{% url "chat:delete_message" %}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+          body: JSON.stringify({ message_id: messageId })
+        });
+        const data = await response.json();
+        if (data.success) currentMessage.remove();
+        else alert('Помилка при видаленні: ' + data.error);
+      } catch (err) { console.error(err); }
+      reactionPicker.style.display = 'none';
+      currentMessage = null;
+    });
   }
 
   let currentMessage = null;
   const container = document.getElementById('message-container');
-
-  const scrollToBottom = () => {
-    if (container) {
-      container.scrollTop = container.scrollHeight;
-    }
-  };
-
+  const scrollToBottom = () => { if (container) container.scrollTop = container.scrollHeight; };
   scrollToBottom();
 
-  document.querySelectorAll('.message').forEach(msg => {
-    msg.addEventListener('click', e => {
-      if (reactionPicker.contains(e.target)) return;
-      e.stopPropagation();
-      if (currentMessage === msg) {
-        reactionPicker.style.display = 'none';
-        currentMessage = null;
-        return;
-      }
-      currentMessage = msg;
-      const rect = msg.getBoundingClientRect();
-
-      let top = rect.top + window.scrollY - reactionPicker.offsetHeight - 8;
-      let left = rect.left + window.scrollX;
-
-      const rightEdge = left + reactionPicker.offsetWidth;
-      const viewportWidth = window.innerWidth;
-      if (rightEdge > viewportWidth) {
-        left = viewportWidth - reactionPicker.offsetWidth - 10;
-      }
-      if (left < 10) left = 10;
-
-      reactionPicker.style.top = `${top}px`;
-      reactionPicker.style.left = `${left}px`;
-      reactionPicker.style.display = 'flex';
-
-      if(reactionPicker.classList.contains('expanded')){
-        scrollArrow.click();
-      }
+  // Функція для додавання обробників кліку на повідомлення (щоб відкрити меню реакцій)
+  function attachMessageClickHandlers() {
+    document.querySelectorAll('.message').forEach(msg => {
+      msg.onclick = (e) => {
+        if (reactionPicker.contains(e.target)) return;
+        e.stopPropagation();
+        if (currentMessage === msg) {
+          reactionPicker.style.display = 'none';
+          currentMessage = null;
+          return;
+        }
+        currentMessage = msg;
+        const rect = msg.getBoundingClientRect();
+        let top = rect.top + window.scrollY - reactionPicker.offsetHeight - 8;
+        let left = rect.left + window.scrollX;
+        const rightEdge = left + reactionPicker.offsetWidth;
+        const viewportWidth = window.innerWidth;
+        if (rightEdge > viewportWidth) left = viewportWidth - reactionPicker.offsetWidth - 10;
+        if (left < 10) left = 10;
+        reactionPicker.style.top = `${top}px`;
+        reactionPicker.style.left = `${left}px`;
+        reactionPicker.style.display = 'flex';
+        if (reactionPicker.classList.contains('expanded')) toggleBtn.click();
+      };
     });
-  });
+  }
 
-  reactionPicker.addEventListener('click', async e => {
-    if (e.target.tagName === 'SPAN' && currentMessage && !e.target.classList.contains('scroll-arrow')) {
+  attachMessageClickHandlers();
+
+  // Функція оновлення повідомлень через AJAX (парсинг HTML і заміна вмісту)
+  async function refreshMessages() {
+    try {
+      const response = await fetch(window.location.href, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      if (response.ok) {
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newContainer = doc.getElementById('message-container');
+        if (newContainer) {
+          if (container.innerHTML !== newContainer.innerHTML) {
+            container.innerHTML = newContainer.innerHTML;
+            scrollToBottom();
+            attachMessageClickHandlers();
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Помилка при оновленні повідомлень:', e);
+    }
+  }
+
+  // Запуск оновлення кожну секунду
+  setInterval(refreshMessages, 1000);
+
+  reactionPicker.querySelector('.emojis').addEventListener('click', async e => {
+    if (e.target.tagName === 'SPAN' && currentMessage) {
+      if (e.target.classList.contains('toggle-btn') || e.target.classList.contains('edit-btn') || e.target.classList.contains('delete-btn')) return;
+
       const emoji = e.target.textContent;
       const messageId = currentMessage.dataset.messageId;
 
       try {
         const response = await fetch('{% url "chat:add_reaction" %}', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-          },
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
           body: JSON.stringify({ message_id: messageId, emoji })
         });
-
         const data = await response.json();
         if (data.success) {
           const reactionsDiv = currentMessage.querySelector('.reactions');
@@ -390,13 +519,8 @@
             reactionsDiv.appendChild(span);
           });
           scrollToBottom();
-        } else {
-          console.error('Помилка:', data.error);
-        }
-      } catch (err) {
-        console.error('Fetch error:', err);
-      }
-
+        } else console.error('Помилка:', data.error);
+      } catch (err) { console.error('Fetch error:', err); }
       reactionPicker.style.display = 'none';
       currentMessage = null;
     }

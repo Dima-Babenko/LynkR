@@ -9,10 +9,44 @@ from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.utils.timezone import now, timedelta
-
-
+from django.views.decorators.csrf import csrf_exempt
 
 User = get_user_model()
+
+
+@csrf_exempt
+def edit_message(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        data = json.loads(request.body)
+        message_id = data.get('message_id')
+        new_text = data.get('new_text', '').strip()
+        try:
+            message = Message.objects.get(id=message_id)
+            if message.sender != request.user:
+                return JsonResponse({'success': False, 'error': 'Це не ваше повідомлення.'})
+            message.text = new_text
+            message.save()
+            return JsonResponse({'success': True})
+        except Message.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Повідомлення не знайдено.'})
+    return JsonResponse({'success': False, 'error': 'Невірний запит.'})
+
+
+@csrf_exempt
+def delete_message(request):
+    if request.method == 'POST' and request.user.is_authenticated:
+        data = json.loads(request.body)
+        message_id = data.get('message_id')
+        try:
+            message = Message.objects.get(id=message_id)
+            if message.sender != request.user:
+                return JsonResponse({'success': False, 'error': 'Це не ваше повідомлення.'})
+            message.delete()
+            return JsonResponse({'success': True})
+        except Message.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Повідомлення не знайдено.'})
+    return JsonResponse({'success': False, 'error': 'Невірний запит.'})
+
 
 @login_required
 def chat_list(request):
@@ -39,7 +73,6 @@ def chat_detail(request, chat_id):
         message.chat = chat
         message.sender = request.user
 
-        # 🔽 Обробка відповіді на інше повідомлення
         reply_to_id = request.POST.get("reply_to")
         if reply_to_id:
             try:
@@ -58,6 +91,7 @@ def chat_detail(request, chat_id):
         'form': form,
         'other_user': other_user,
         'is_online': is_online,
+        'participants': chat.participants.all(),
         'room_name': f'chat_{chat.id}',
     })
 
@@ -80,16 +114,18 @@ def start_private_chat(request, user_id):
 @login_required
 def create_group_chat(request):
     if request.method == 'POST':
-        form = GroupChatForm(request.POST)
+        form = GroupChatForm(request.POST, user=request.user)
         if form.is_valid():
             chat = form.save(commit=False)
             chat.is_group = True
             chat.save()
-            chat.participants.add(request.user)
             form.save_m2m()
+            if request.user not in chat.participants.all():
+                chat.participants.add(request.user)
             return redirect('chat:chat_detail', chat_id=chat.id)
     else:
-        form = GroupChatForm()
+        form = GroupChatForm(user=request.user)
+
     return render(request, 'chat/create_group_chat.html', {'form': form})
 
 @login_required
@@ -100,7 +136,6 @@ def fetch_messages(request, chat_id):
     messages = chat.messages.select_related("sender").order_by("timestamp")
     html = render_to_string("chat/_messages.html", {"messages": messages, "request": request})
     return JsonResponse({"html": html})
-
 
 @login_required
 @require_POST
@@ -118,7 +153,6 @@ def add_reaction(request):
             defaults={'emoji': emoji}
         )
 
-        # Підвантажуємо всі реакції для цього повідомлення для оновлення в UI
         reactions = list(message.reactions.values('emoji'))
 
         return JsonResponse({'success': True, 'reactions': reactions})
